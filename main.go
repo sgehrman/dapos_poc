@@ -13,64 +13,9 @@ type transaction struct {
 	value int
 	time time.Time
 	delegate_id int
+	validators int
 }
 
-func delegate(id int, nodes int, initial_state map[string]int, c chan transaction, test chan string) {
-
-	//create local balance variable for this delegate
-	balance := make(map[string]int)
-
-	for k,v := range initial_state {
-		balance[k] = v
-	}
-
-	transaction_validity := make(map[int]string)
-
-	//announce yor existance
-	fmt.Printf("Delegate %d\n", id)
-
-	//listen for transactions forever
-	for {
-		msg := <- c
-		//if transaction came from non-delegate node (new)
-		if msg.delegate_id > nodes {
-
-			//check to see if transaction is valid
-			valid := process_transaction(balance, msg.from, msg.to, msg.value)
-			if valid {
-				transaction_validity[msg.id] = "valid"
-				fmt.Printf("delegate %d: received valid transaction %d from an ndn \n", id, msg.id)
-
-				//set the delegate id to current id and broadcast the valid transaction to other nodes
-				msg.delegate_id = id
-				for i := 0; i < nodes-1; i++ {
-					c <- msg
-				}
-
-			} else {
-				fmt.Printf("delegate %d: received invalid transaction %d from an ndn \n", id, msg.id)
-			}
-			time.Sleep(time.Millisecond)
-
-		//transactions from delegates should be reevaluated
-		} else {
-			fmt.Printf("delegate %d: received transaction %d from delegate %d \n", id, msg.id, msg.delegate_id)
-
-		}
-	}
-
-}
-
-func process_transaction(balance map[string]int, from string, to string, value int) bool {
-	if balance[from] >= value {
-		//if transaction is valid, update existing balances
-		balance[from] = balance[from] - value
-		balance[to] = balance[to] + value
-		return true
-	} else {
-		return false
-	}
-}
 
 func main() {
 	fmt.Println("DAPoS Simulation!")
@@ -95,7 +40,8 @@ func main() {
 	}
 
 	//input things forever
-	transaction_id := 0
+	//first transaction is 1 because geesis block is 0
+	transaction_id := 1
 	var from string
 	var to string
 	var value int
@@ -109,7 +55,7 @@ func main() {
 		fmt.Scanf("%d", &value)
 
 		//generate new transaction from
-		new_transaction := transaction{transaction_id, from, to, value, time.Now(), (delegate_count+1)}
+		new_transaction := transaction{transaction_id, from, to, value, time.Now(), (delegate_count+1), 0}
 
 		//increment transaction id so no repeats.
 		//in actual code this would be transaction hash
