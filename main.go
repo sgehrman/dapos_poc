@@ -45,6 +45,7 @@ func main() {
 	var from string
 	var to string
 	var value int
+	var delay bool
 	for {
 		//take in
 		fmt.Println("transaction from?")
@@ -53,6 +54,10 @@ func main() {
 		fmt.Scanf("%s", &to)
 		fmt.Println("transaction value?")
 		fmt.Scanf("%d", &value)
+		fmt.Println("delay 10s? true/false")
+		fmt.Scanf("%t", &delay)
+		fmt.Println(delay)
+
 
 		//generate new transaction from
 		new_transaction := transaction{transaction_id, from, to, value, time.Now(), (delegate_count+1), 0}
@@ -61,6 +66,15 @@ func main() {
 		//in actual code this would be transaction hash
 		transaction_id++
 
-		c <- new_transaction
+		go send_transaction(new_transaction, c, delay)
 	}
+}
+
+func send_transaction(transaction transaction, c chan transaction, delay bool) {
+	fmt.Println("send_transaction")
+	if delay {
+		fmt.Println("delay true")
+		time.Sleep(time.Second * 10)
+	}
+	c <- transaction
 }

@@ -58,26 +58,26 @@ func delegate(id int, nodes int, initial_state map[string]int, c chan transactio
 			fmt.Printf("delegate %d: received transaction %d from delegate %d \n", id, msg.id, msg.delegate_id)
 
 			//TODO: process unseen transactions from other delegates
-			////if transaction came from another delegate, check to see if it's been seen before then process it
-			//if !seen_transaction(msg.id, genesis_block) {
-			//	valid := process_transaction(genesis_block, msg)
-			//	if valid {
-			//		fmt.Printf("delegate %d: received valid transaction %d from delegate %d \n", id, msg.id, msg.delegate_id)
-			//		//save the transaction to the chain
-			//		new_block := block{nil, nil, msg}
-			//		current_block.next_block = &new_block
-			//		current_block = &new_block
-			//
-			//		//set the delegate id to current id and broadcast the valid transaction to other nodes
-			//		msg.delegate_id = id
-			//		for i := 0; i < nodes-1; i++ {
-			//			c <- msg
-			//		}
-			//
-			//	} else {
-			//		fmt.Printf("delegate %d: received invalid transaction %d from delegate %d \n", id, msg.id, msg.delegate_id)
-			//	}
-			//}
+			//if transaction came from another delegate, check to see if it's been seen before then process it
+			if !seen_transaction(msg.id, genesis_block) {
+				valid := process_transaction(genesis_block, msg)
+				if valid {
+					fmt.Printf("delegate %d: received valid transaction %d from delegate %d \n", id, msg.id, msg.delegate_id)
+					//save the transaction to the chain
+					new_block := block{nil, nil, msg}
+					current_block.next_block = &new_block
+					current_block = &new_block
+
+					//set the delegate id to current id and broadcast the valid transaction to other nodes
+					msg.delegate_id = id
+					for i := 0; i < nodes-1; i++ {
+						c <- msg
+					}
+
+				} else {
+					fmt.Printf("delegate %d: received invalid transaction %d from delegate %d \n", id, msg.id, msg.delegate_id)
+				}
+			}
 		}
 	}
 
@@ -99,6 +99,11 @@ func seen_transaction(id int, genesis_block *block) bool {
 //checking that transaction and the ones following it for validity
 //return true if transaction is valid
 func process_transaction(current_block *block, msg transaction) bool {
+	//don't validate transactions on 0 or less
+	if msg.value <= 0 {
+		return false
+	}
+
 	//new balance maping
 	new_balances := make(map[string]int)
 	pointer_block := current_block
