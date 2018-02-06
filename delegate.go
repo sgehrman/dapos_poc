@@ -5,91 +5,72 @@ import (
 	"time"
 )
 
-//block struct to keep the linked list
-type block struct {
-	prev_block *block
-	next_block *block
-	transaction transaction
+func NewDelegate(id int, nodes int, c chan Transaction, v chan Vote) (delegate *Delegate) {
+	premineWallet := Transaction{0, "dl", "Genesis", 100, time.Now(), id, nodes}
+	genesisBlock := new(Block)
+	genesisBlock.Transaction = premineWallet
+
+	return &Delegate{
+		Id:           id,
+		PeerCount:    nodes,
+		GenesisBlock: genesisBlock,
+		CurrentBlock: genesisBlock,
+		Channel:      c,
+		VoteChannel:  v,
+	}
 }
 
-func delegate(id int, nodes int, initial_state map[string]int, c chan transaction, test chan string) {
-
-	//Genesis block
-	//All delegates are instantiated with teh same genesis block
-	premine_wallet_a0 := transaction{0, "dl", "a0", 10, time.Now(), 0, nodes}
-	genesis_block := new(block)
-	genesis_block.transaction = premine_wallet_a0
-	//set current block pointer to genesis block
-	current_block := genesis_block
-
-
-	//announce yor existance
-	fmt.Printf("Delegate %d\n", id)
-
-
+func (d *Delegate)Start() {
 	//listen for transactions forever
 	for {
-		msg := <- c
+		msg := <- d.Channel
 		//if transaction came from non-delegate node (new)
-		if msg.delegate_id > nodes {
-
-			//check to see if transaction is valid
-			valid := process_transaction(genesis_block, msg)
-			if valid {
-				fmt.Printf("delegate %d: received valid transaction %d from an ndn \n", id, msg.id)
-				//save the transaction to the chain
-				new_block := block{nil, nil, msg}
-				current_block.next_block = &new_block
-				current_block = &new_block
-
-				//set the delegate id to current id and broadcast the valid transaction to other nodes
-				msg.delegate_id = id
-				for i := 0; i < nodes-1; i++ {
-					c <- msg
-				}
-
-			} else {
-				fmt.Printf("delegate %d: received invalid transaction %d from an ndn \n", id, msg.id)
-			}
-			time.Sleep(time.Millisecond)
+		if msg.DelegateId > d.PeerCount {
+			d.validateBlockAndTransmit(msg, "non-delegate")
+			time.Sleep(time.Second)
 
 			//transactions from delegates should be reevaluated
 		} else {
-			fmt.Printf("delegate %d: received transaction %d from delegate %d \n", id, msg.id, msg.delegate_id)
-
 			//TODO: process unseen transactions from other delegates
 			//if transaction came from another delegate, check to see if it's been seen before then process it
-			if !seen_transaction(msg.id, genesis_block) {
-				valid := process_transaction(genesis_block, msg)
-				if valid {
-					fmt.Printf("delegate %d: received valid transaction %d from delegate %d \n", id, msg.id, msg.delegate_id)
-					//save the transaction to the chain
-					new_block := block{nil, nil, msg}
-					current_block.next_block = &new_block
-					current_block = &new_block
-
-					//set the delegate id to current id and broadcast the valid transaction to other nodes
-					msg.delegate_id = id
-					for i := 0; i < nodes-1; i++ {
-						c <- msg
-					}
-
-				} else {
-					fmt.Printf("delegate %d: received invalid transaction %d from delegate %d \n", id, msg.id, msg.delegate_id)
-				}
+			if !seenTransaction(msg.Id, d.GenesisBlock) {
+				d.validateBlockAndTransmit(msg, "delegate")
+			} else {
+				//fmt.Printf("delegate %d: skipping received transaction %d from delegate %d \n", d.Id, msg.Id, msg.DelegateId)
 			}
 		}
+	}
+}
+
+func (d *Delegate)validateBlockAndTransmit(msg Transaction, sourceType string) {
+	valid := processTransaction(d.CurrentBlock, msg)
+	if valid {
+		fmt.Printf("delegate %d: received valid transaction %d from a %s node %d with value: %d\n", d.Id, d.CurrentBlock.Transaction.Id, sourceType, msg.DelegateId, msg.Value)
+		//save the transaction to the chain
+		newBlock := Block{nil, nil, msg}
+		d.CurrentBlock.Next_block = &newBlock
+		d.CurrentBlock = &newBlock
+
+		//set the delegate id to current id and broadcast the valid transaction to other nodes
+		msg.DelegateId = d.Id
+		for i := 0; i < d.PeerCount-1; i++ {
+			d.Channel <- msg
+		}
+		d.VoteChannel <- Vote{TransactionId: msg.Id, VoteYesNo: true, DelegateId: d.Id}
+	} else {
+		fmt.Printf("delegate %d: received invalid transaction %d from an %s %d with value: %d\n", d.Id, msg.Id, sourceType, msg.DelegateId, msg.Value)
+		d.VoteChannel <- Vote{TransactionId: msg.Id, VoteYesNo: false, DelegateId: d.Id}
 	}
 
 }
 
-func seen_transaction(id int, genesis_block *block) bool {
-	pointer_block := genesis_block
-	for pointer_block != nil {
-		if pointer_block.transaction.id == id {
+func seenTransaction(id int, genesisBlock *Block) bool {
+	pointerBlock := genesisBlock
+	for pointerBlock != nil {
+		if pointerBlock.Transaction.Id == id {
 			return true
 		}
-		pointer_block = pointer_block.next_block
+		pointerBlock = pointerBlock.Next_block
 	}
 	return false
 }
@@ -98,90 +79,91 @@ func seen_transaction(id int, genesis_block *block) bool {
 //adding the transaction in it's proper place in the time-sorted linked list
 //checking that transaction and the ones following it for validity
 //return true if transaction is valid
-func process_transaction(current_block *block, msg transaction) bool {
+func processTransaction(currentBlock *Block, msg Transaction) bool {
 	//don't validate transactions on 0 or less
-	if msg.value <= 0 {
+	if msg.Value <= 0 {
 		return false
 	}
 
 	//new balance maping
-	new_balances := make(map[string]int)
-	pointer_block := current_block
+	newBalances := make(map[string]int)
+	newBalances[msg.From] = GetAccount(msg.From).Balance
+	newBalances[msg.To] = GetAccount(msg.To).Balance
+	pointerBlock := currentBlock
 
 	//iterate until new_balances matches up with blockchain state at time of transaction
 	for {
-		if pointer_block.next_block == nil { //pointer_block is end of the chain
-			fmt.Println("there are no more blocks after pointer_block")
-			new_balances[pointer_block.transaction.to] += pointer_block.transaction.value
+		if pointerBlock.Next_block == nil { //pointerBlock is end of the chain
+			fmt.Println("there are no more blocks after pointerBlock")
+			newBalances[pointerBlock.Transaction.To] += pointerBlock.Transaction.Value
 
-			if pointer_block.transaction.from != "dl" { //don't set a negative balance for premined transfers
-				new_balances[pointer_block.transaction.from] -= pointer_block.transaction.value
+			if pointerBlock.Transaction.From != "dl" { //don't set a negative balance for premined transfers
+				newBalances[pointerBlock.Transaction.From] -= pointerBlock.Transaction.Value
 			}
 			break
 		} else {
-			fmt.Println("there are still more blocks after pointer_block")
-			//break if msg goes after pointer_block, but before pointer_block.next_block
-			if msg.time.After(pointer_block.transaction.time) && msg.time.Before(pointer_block.next_block.transaction.time) {
+			fmt.Println("there are still more blocks after pointerBlock")
+			//break if msg goes after pointerBlock, but before pointerBlock.next_block
+			if msg.Time.After(pointerBlock.Transaction.Time) && msg.Time.Before(pointerBlock.Next_block.Transaction.Time) {
 
-				fmt.Println("msg goes between tx %d and tx %d \n", pointer_block.transaction.id, pointer_block.next_block.transaction.id)
-				new_balances[pointer_block.transaction.to] += pointer_block.transaction.value
+				fmt.Println("msg goes between tx %d and tx %d \n", pointerBlock.Transaction.Id, pointerBlock.Next_block.Transaction.Id)
+				newBalances[pointerBlock.Transaction.To] += pointerBlock.Transaction.Value
 
-				if pointer_block.transaction.from != "dl" { //don't set a negative balance for premined transfers
-					new_balances[pointer_block.transaction.from] -= pointer_block.transaction.value
+				if pointerBlock.Transaction.From != "dl" { //don't set a negative balance for premined transfers
+					newBalances[pointerBlock.Transaction.From] -= pointerBlock.Transaction.Value
 				}
 				break
 			} else {
-				//if msg.time doesn't follow pointer_block, update new_balance and iterate
-				new_balances[pointer_block.transaction.to] += pointer_block.transaction.value
+				//if msg.time doesn't follow pointerBlock, update new_balance and iterate
+				newBalances[pointerBlock.Transaction.To] += pointerBlock.Transaction.Value
 
-				if pointer_block.transaction.from != "dl" { //don't set a negative balance for premined transfers
-					new_balances[pointer_block.transaction.from] -= pointer_block.transaction.value
+				if pointerBlock.Transaction.From != "dl" { //don't set a negative balance for premined transfers
+					newBalances[pointerBlock.Transaction.From] -= pointerBlock.Transaction.Value
 				}
-
-				pointer_block = pointer_block.next_block
+				pointerBlock = pointerBlock.Next_block
 			}
 		}
 	}
 
-	fmt.Printf("current block is %d \n", pointer_block.transaction.id)
-	fmt.Printf("new_balances[%s]=%d \n", msg.from, new_balances[msg.from])
+	fmt.Printf("current block is %d \n", pointerBlock.Transaction.Id)
+	fmt.Printf("new_balances[%s]=%d \n", msg.From, newBalances[msg.From])
 	//is new transaction valid?
-	if new_balances[msg.from] >= msg.value {
+	if newBalances[msg.From] >= msg.Value {
 
 		//if so make a new block and add it to the chain
-		new_valid_block := block{pointer_block, pointer_block.next_block, msg}
-		pointer_block.next_block = &new_valid_block
-		if new_valid_block.next_block != nil {
-			new_valid_block.next_block.prev_block = &new_valid_block
+		new_valid_block := Block{pointerBlock, pointerBlock.Next_block, msg}
+		pointerBlock.Next_block = &new_valid_block
+		if new_valid_block.Next_block != nil {
+			new_valid_block.Next_block.Prev_block = &new_valid_block
 		}
 
 		//update new_balances to reflect the recent addition
-		new_balances[msg.from] = new_balances[msg.from] - msg.value
-		new_balances[msg.to] = new_balances[msg.to] + msg.value
+		newBalances[msg.From] = newBalances[msg.From] - msg.Value
+		newBalances[msg.To] = newBalances[msg.To] + msg.Value
 
 		//and then check following blocks for validity
 		//using revoked_blocks to keep track of now invalid transactions
-		pointer_block = &new_valid_block
-		for pointer_block.next_block != nil {
+		pointerBlock = &new_valid_block
+		for pointerBlock.Next_block != nil {
 			//is the following transaction valid?
-			if new_balances[pointer_block.transaction.from] >= pointer_block.transaction.value {
-				fmt.Printf("yay! transaction %d is still valid \n", pointer_block.transaction.id)
+			if newBalances[pointerBlock.Transaction.From] >= pointerBlock.Transaction.Value {
+				fmt.Printf("yay! transaction %d is still valid \n", pointerBlock.Transaction.Id)
 				//yay! transaction is valid - update balances and continue onto next block
-				new_balances[pointer_block.transaction.from] -= pointer_block.transaction.value
-				new_balances[pointer_block.transaction.to] += pointer_block.transaction.value
+				newBalances[pointerBlock.Transaction.From] -= pointerBlock.Transaction.Value
+				newBalances[pointerBlock.Transaction.To] += pointerBlock.Transaction.Value
 
-				if pointer_block.next_block == nil {
+				if pointerBlock.Next_block == nil {
 					break
 				} else {
-					pointer_block = pointer_block.next_block
+					pointerBlock = pointerBlock.Next_block
 				}
 			}
-			if new_balances[pointer_block.transaction.from] < pointer_block.transaction.value {
-				fmt.Printf("turns out transaction %d is invalid \n", pointer_block.transaction.id)
+			if newBalances[pointerBlock.Transaction.From] < pointerBlock.Transaction.Value {
+				fmt.Printf("turns out transaction %d is invalid \n", pointerBlock.Transaction.Id)
 				//oh no! this previously believed valid block is actually invaid! D:
 				//remove block from list and keep going
-				pointer_block.prev_block.next_block = pointer_block.next_block
-				pointer_block.next_block.prev_block = pointer_block.prev_block
+				pointerBlock.Prev_block.Next_block = pointerBlock.Next_block
+				pointerBlock.Next_block.Prev_block = pointerBlock.Prev_block
 			}
 		}
 		//when finished, broadcast awesome new block and potentially broken transactions
@@ -190,5 +172,4 @@ func process_transaction(current_block *block, msg transaction) bool {
 	} else { //if new transaction is not valid, drop that bitch like it's hot
 		return false
 	}
-
 }
