@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"sync"
 )
 
 type VoteCounter struct {
@@ -31,6 +32,11 @@ func NewVoteCounter(c chan Vote) *VoteCounter {
 	}
 }
 
+var mutex = &sync.Mutex {}
+
+func init () {
+}
+
 func (vc *VoteCounter)AddVoting(t Transaction, nbrDelegates int) {
 	votes := Votes{
 		Transaction: 	t,
@@ -38,7 +44,10 @@ func (vc *VoteCounter)AddVoting(t Transaction, nbrDelegates int) {
 		VoteCount:   	0,
 		NbrDelegates: 	nbrDelegates,
 	}
+
+	mutex.Lock ()
 	vc.votes[t.Id] = &votes
+	mutex.Unlock()
 }
 
 func (vc *VoteCounter) Start() {
@@ -47,7 +56,10 @@ func (vc *VoteCounter) Start() {
 			select {
 			case vote := <-vc.Channel:
 				// we have received a vote.
+				mutex.Lock ()
 				v := vc.votes[vote.TransactionId]
+				mutex.Unlock()
+
 				log.Printf("Received Vote for transaction: %d value %t from delegate %d with value %d", vote.TransactionId, vote.VoteYesNo, vote.DelegateId, v.Transaction.Value)
 				v.VoteYesNo = append(v.VoteYesNo, vote.VoteYesNo)
 				v.VoteCount++
