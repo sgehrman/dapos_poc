@@ -28,8 +28,7 @@ type Delegate struct {
 	PeerCount       int
 	GenesisBlock    *Block
 	CurrentBlock    *Block
-	ChannelNode     chan Transaction
-	ChannelDelegate chan Transaction
+	Channel     chan Transaction
 	VoteChannel     chan Vote
 }
 

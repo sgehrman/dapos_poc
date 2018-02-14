@@ -73,7 +73,7 @@ func TestSequencedSlam ( t *testing.T ) {
 
 	voteCounter := setup(delegate_count,c )
 
-	for i := 1; i < 100; i++ {
+	for i := 1; i < 1000; i++ {
 		runSome(voteCounter, delegate_count, c, i)
 //		time.Sleep(time.Second * 5)
 
