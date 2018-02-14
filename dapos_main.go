@@ -42,27 +42,29 @@ func main() {
 	var delegate_count int = 4
 
 	//create delegates
-	var c chan Transaction = make(chan Transaction)
+	var c_node chan Transaction = make(chan Transaction)
+	var c_delegate chan Transaction = make (chan Transaction)
 	var voteChannel chan Vote = make(chan Vote)
 
 	var voteCounter= NewVoteCounter(voteChannel)
 	voteCounter.Start()
 	for i := 0; i < delegate_count; i++ {
-		delegate := NewDelegate(i, delegate_count, c, voteChannel)
-		go delegate.Start()
+		delegate := NewDelegate(i, delegate_count, c_node, c_delegate, voteChannel)
+		go delegate.StartNodeDaemon()
+		go delegate.StartDelegateDaemon()
 	}
 
 	for i := 1; i < 15; i++ {
-		runSome(voteCounter, delegate_count, c, i)
-		time.Sleep(time.Second * 5)
-
+		runSome(voteCounter, delegate_count, c_node, c_delegate,i)
+//		time.Sleep(time.Second * 5)
+		fmt.Println( i)
 	}
 	for _, acct := range getAccounts().accounts {
 		printAccounts(acct)
 	}
 }
 
-func runSome(voteCounter *VoteCounter, delegateCount int, c chan Transaction, transactionId int) {
+func runSome(voteCounter *VoteCounter, delegateCount int, c_node chan Transaction, c_delegate chan Transaction, transactionId int) {
 	from := getRandomAccount(nil)
 	to := getRandomAccount(from)
 	amount := GetRandomNumber(20)
@@ -74,7 +76,7 @@ func runSome(voteCounter *VoteCounter, delegateCount int, c chan Transaction, tr
 	//generate new transaction from
 	new_transaction := Transaction{transactionId, from.Name, to.Name, amount, time.Now(), (delegateCount + 1), 0}
 	voteCounter.AddVoting(new_transaction, delegateCount)
-	sendTransaction(new_transaction, c, delay)
+	sendTransaction(new_transaction, c_node, c_delegate, delay)
 
 	//increment transaction id so no repeats.
 	//in actual code this would be transaction hash
@@ -82,14 +84,14 @@ func runSome(voteCounter *VoteCounter, delegateCount int, c chan Transaction, tr
 }
 
 
-func sendTransaction(transaction Transaction, c chan Transaction, delay bool) {
+func sendTransaction(transaction Transaction, c_node chan Transaction, c_delegate chan Transaction, delay bool) {
 	log.Printf("Sending Transaction: %d : %s : %s : %d", transaction.Id, transaction.From, transaction.To, transaction.Value)
 	fmt.Println("SendTransaction")
 	if delay {
 		fmt.Println("delay true")
 		time.Sleep(time.Second * 10)
 	}
-	c <- transaction
+	c_node <- transaction
 }
 
 func printAccounts(acct *Account) {

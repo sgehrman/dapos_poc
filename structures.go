@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 	"fmt"
+//	"github.com/aws/aws-sdk-go/service/medialive"
 )
 
 //block struct to keep the linked list
@@ -23,12 +24,13 @@ type Transaction struct {
 }
 
 type Delegate struct {
-	Id   		 int
-	PeerCount 	 int
-	GenesisBlock *Block
-	CurrentBlock *Block
-	Channel		 chan Transaction
-	VoteChannel  chan Vote
+	Id              int
+	PeerCount       int
+	GenesisBlock    *Block
+	CurrentBlock    *Block
+	ChannelNode     chan Transaction
+	ChannelDelegate chan Transaction
+	VoteChannel     chan Vote
 }
 
 type Account struct {

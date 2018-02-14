@@ -5,26 +5,55 @@ import (
 	"time"
 )
 
-func NewDelegate(id int, nodes int, c chan Transaction, v chan Vote) (delegate *Delegate) {
+func NewDelegate(id int, nodes int, c_node chan Transaction, c_delegate chan Transaction, v chan Vote) (delegate *Delegate) {
 	premineWallet := Transaction{0, "dl", "Genesis", 100, time.Now(), id, nodes}
 	genesisBlock := new(Block)
 	genesisBlock.Transaction = premineWallet
 
 	return &Delegate{
-		Id:           id,
-		PeerCount:    nodes,
-		GenesisBlock: genesisBlock,
-		CurrentBlock: genesisBlock,
-		Channel:      c,
-		VoteChannel:  v,
+		Id:              id,
+		PeerCount:       nodes,
+		GenesisBlock:    genesisBlock,
+		CurrentBlock:    genesisBlock,
+		ChannelNode:     c_node,
+		ChannelDelegate: c_delegate,
+		VoteChannel:     v,
 	}
 }
 
-func (d *Delegate)Start() {
+
+func (d *Delegate)StartNodeDaemon() {
 	//listen for transactions forever
+	fmt.Println("Starting Node Listener for Delegate")
 	for {
-		msg := <- d.Channel
+		msg := <- d.ChannelNode
 		//if transaction came from non-delegate node (new)
+		fmt.Println("Seeing a Node message")
+		if msg.DelegateId > d.PeerCount {
+			d.validateBlockAndTransmit(msg, "non-delegate")
+			time.Sleep(time.Second)
+
+			//transactions from delegates should be reevaluated
+		} else {
+			//TODO: process unseen transactions from other delegates
+			//if transaction came from another delegate, check to see if it's been seen before then process it
+			if !seenTransaction(msg.Id, d.GenesisBlock) {
+				d.validateBlockAndTransmit(msg, "delegate")
+			} else {
+				//fmt.Printf("delegate %d: skipping received transaction %d from delegate %d \n", d.Id, msg.Id, msg.DelegateId)
+			}
+		}
+	}
+}
+
+func ( d *Delegate)StartDelegateDaemon () {
+	fmt.Println("Starting Delegate Listener for Delegate")
+
+	for {
+		msg := <- d.ChannelDelegate
+
+		//if transaction came from non-delegate node (new)
+		fmt.Println("Seeing a Delegate message")
 		if msg.DelegateId > d.PeerCount {
 			d.validateBlockAndTransmit(msg, "non-delegate")
 			time.Sleep(time.Second)
@@ -54,7 +83,7 @@ func (d *Delegate)validateBlockAndTransmit(msg Transaction, sourceType string) {
 		//set the delegate id to current id and broadcast the valid transaction to other nodes
 		msg.DelegateId = d.Id
 		for i := 0; i < d.PeerCount-1; i++ {
-			d.Channel <- msg
+			go func () { d.ChannelDelegate <- msg } ()
 		}
 		d.VoteChannel <- Vote{TransactionId: msg.Id, VoteYesNo: true, DelegateId: d.Id}
 	} else {
