@@ -4,10 +4,27 @@ import (
 	"fmt"
 	"time"
 	"math/rand"
-	"log"
+	 log "github.com/sirupsen/logrus"
+	 "os"
+
 )
 
 var names = []string{"Bob", "Chris", "Greg", "Muhammad", "Nicolae", "Zane"}
+
+func init() {
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.TextFormatter{})
+
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	log.SetOutput(os.Stdout)
+
+	// Only log the warning severity or above.
+	log.SetLevel(log.ErrorLevel)
+
+	log.Info("Dapos POC Starting")
+}
+
 
 func GetRandomNumber(boundary int) int {
 	s1 := rand.NewSource(time.Now().UnixNano())
@@ -63,10 +80,13 @@ func main() {
 }
 
 func runSome(voteCounter *VoteCounter, delegateCount int, c chan Transaction, transactionId int) {
+
 	from := getRandomAccount(nil)
 	to := getRandomAccount(from)
 	amount := GetRandomNumber(20)
-	fmt.Printf("Transaction from %s : to %s for amount %d\n\n", from.Name, to.Name, amount)
+
+
+	log.WithFields( log.Fields { "From " : from.Name, "To " : to.Name, "Amount " : amount}).Info ("Transaction receipt")
 
 	//input things forever
 	//first transaction is 1 because geesis block is 0
@@ -78,22 +98,27 @@ func runSome(voteCounter *VoteCounter, delegateCount int, c chan Transaction, tr
 
 	//increment transaction id so no repeats.
 	//in actual code this would be transaction hash
-	log.Printf("\nAccount %s now has : %d and Account %s now has %d\n", from.Name, from.Balance, to.Name, to.Balance)
+
+	log.WithFields( log.Fields {"From " : from.Name, "From Balance " : from.Balance, "To " : to.Name, "To Balance" : to.Balance}).Info ("Balances")
 }
 
 
 func sendTransaction(transaction Transaction, c chan Transaction, delay bool) {
-	log.Printf("Sending Transaction: %d : %s : %s : %d", transaction.Id, transaction.From, transaction.To, transaction.Value)
-	fmt.Println("SendTransaction")
+
+	log.WithFields( log.Fields { "Transaction ID" : transaction.Id, "Transaction From" : transaction.From, "Transaction To" : transaction.To, "Transaction Value" : transaction.Value}).Info ("Sending Transaction")
+
 	if delay {
-		fmt.Println("delay true")
+		log.Info ("delay true")
+//		fmt.Println("delay true")
 		time.Sleep(time.Second * 10)
 	}
 	c <- transaction
 }
 
 func printAccounts(acct *Account) {
-	log.Printf("Account %s now has : %d \n", acct.Name, acct.Balance)
+
+	log.WithFields( log.Fields { "Account Name" : acct.Name, "Balance": acct.Balance}).Info ("New Balances")
+
 	var balance int
 	for _, t := range acct.Transactions {
 		if t.From == "dl" {
@@ -103,6 +128,7 @@ func printAccounts(acct *Account) {
 		} else {
 			balance += t.Value
 		}
-		log.Printf("\tTransaction: id=%d  from %s to %s value=%d (balance = %d)", t.Id, t.From, t.To, t.Value, balance)
+
+		log.WithFields( log.Fields { "Transaction ID" : t.Id, "From " :t.From, "To" : t.To, "Value" : t.Value, "Balance" : balance} ).Info ("Transaction:")
 	}
 }

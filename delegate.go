@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"time"
+	log "github.com/sirupsen/logrus"
 )
 
 func NewDelegate(id int, nodes int, c chan Transaction,  v chan Vote) (delegate *Delegate) {
@@ -22,13 +23,16 @@ func NewDelegate(id int, nodes int, c chan Transaction,  v chan Vote) (delegate 
 
 
 func (d *Delegate)Start() {
+
 	//listen for transactions forever
-	fmt.Println("Starting Node Listener for Delegate")
+	log.Info ("Starting Node Listener for Delegate")
+
 	for {
 		msg := <- d.Channel
 		//if transaction came from non-delegate node (new)
-		fmt.Println("Seeing a Node message")
+
 		if msg.DelegateId > d.PeerCount {
+
 			d.validateBlockAndTransmit(msg, "non-delegate")
 			//time.Sleep(time.Second)
 
@@ -48,9 +52,13 @@ func (d *Delegate)Start() {
 
 
 func (d *Delegate)validateBlockAndTransmit(msg Transaction, sourceType string) {
+
 	valid := processTransaction(d.CurrentBlock, msg)
+
 	if valid {
-		fmt.Printf("delegate %d: received valid transaction %d from a %s node %d with value: %d\n", d.Id, d.CurrentBlock.Transaction.Id, sourceType, msg.DelegateId, msg.Value)
+
+		log.WithFields(log.Fields {"Delegate ID": d.Id, "Transaction ID": d.CurrentBlock.Transaction.Id, "From" : sourceType, "Node" : msg.DelegateId, "Value" : msg.Value})
+//		fmt.Printf("delegate %d: received valid transaction %d from a %s node %d with value: %d\n", d.Id, d.CurrentBlock.Transaction.Id, sourceType, msg.DelegateId, msg.Value)
 		//save the transaction to the chain
 		newBlock := Block{nil, nil, msg}
 		d.CurrentBlock.Next_block = &newBlock
@@ -63,7 +71,10 @@ func (d *Delegate)validateBlockAndTransmit(msg Transaction, sourceType string) {
 		}
 		d.VoteChannel <- Vote{TransactionId: msg.Id, VoteYesNo: true, DelegateId: d.Id}
 	} else {
-		fmt.Printf("delegate %d: received invalid transaction %d from an %s %d with value: %d\n", d.Id, msg.Id, sourceType, msg.DelegateId, msg.Value)
+
+		log.WithFields( log.Fields { "Delegate ID" : d.Id, "Transaction" : msg.Id, "From" : sourceType, "From ID" : msg.DelegateId, "Value": msg.Value}).Info ( "Received an invalid transaction")
+//		fmt.Printf("delegate %d: received invalid transaction %d from an %s %d with value: %d\n", d.Id, msg.Id, sourceType, msg.DelegateId, msg.Value)
+
 		d.VoteChannel <- Vote{TransactionId: msg.Id, VoteYesNo: false, DelegateId: d.Id}
 	}
 
@@ -99,7 +110,7 @@ func processTransaction(currentBlock *Block, msg Transaction) bool {
 	//iterate until new_balances matches up with blockchain state at time of transaction
 	for {
 		if pointerBlock.Next_block == nil { //pointerBlock is end of the chain
-			fmt.Println("there are no more blocks after pointerBlock")
+			log.Info("there are no more blocks after pointerBlock")
 			newBalances[pointerBlock.Transaction.To] += pointerBlock.Transaction.Value
 
 			if pointerBlock.Transaction.From != "dl" { //don't set a negative balance for premined transfers
@@ -107,11 +118,12 @@ func processTransaction(currentBlock *Block, msg Transaction) bool {
 			}
 			break
 		} else {
-			fmt.Println("there are still more blocks after pointerBlock")
+			log.Info("there are still more blocks after pointerBlock")
 			//break if msg goes after pointerBlock, but before pointerBlock.next_block
 			if msg.Time.After(pointerBlock.Transaction.Time) && msg.Time.Before(pointerBlock.Next_block.Transaction.Time) {
 
-				fmt.Println("msg goes between tx %d and tx %d \n", pointerBlock.Transaction.Id, pointerBlock.Next_block.Transaction.Id)
+				log.WithFields(log.Fields { "pointerBlock.Transaction.Id": pointerBlock.Transaction.Id, "pointerBlock.Next_block.Transaction.Id" : pointerBlock.Next_block.Transaction.Id}).Info ("Message betwen blocks")
+//				fmt.Println("msg goes between tx %d and tx %d \n", pointerBlock.Transaction.Id, pointerBlock.Next_block.Transaction.Id)
 				newBalances[pointerBlock.Transaction.To] += pointerBlock.Transaction.Value
 
 				if pointerBlock.Transaction.From != "dl" { //don't set a negative balance for premined transfers
@@ -130,8 +142,12 @@ func processTransaction(currentBlock *Block, msg Transaction) bool {
 		}
 	}
 
-	fmt.Printf("current block is %d \n", pointerBlock.Transaction.Id)
-	fmt.Printf("new_balances[%s]=%d \n", msg.From, newBalances[msg.From])
+	log.WithFields(log.Fields {"pointerBlock.Transaction.Id" : pointerBlock.Transaction.Id})
+	log.WithFields(log.Fields { "new_balances[]" : msg.From, "Balance" : newBalances[msg.From]})
+
+//	fmt.Printf("current block is %d \n", pointerBlock.Transaction.Id)
+//	fmt.Printf("new_balances[%s]=%d \n", msg.From, newBalances[msg.From])
+
 	//is new transaction valid?
 	if newBalances[msg.From] >= msg.Value {
 
