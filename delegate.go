@@ -18,6 +18,7 @@ func NewDelegate(id int, nodes int, c chan Transaction,  v chan Vote) (delegate 
 		CurrentBlock:    genesisBlock,
 		Channel:     c,
 		VoteChannel:     v,
+		FOO: 0,
 	}
 }
 
@@ -43,6 +44,7 @@ func (d *Delegate)Start() {
 			if !seenTransaction(msg.Id, d.GenesisBlock) {
 				d.validateBlockAndTransmit(msg, "delegate")
 			} else {
+				d.FOO++
 				//fmt.Printf("delegate %d: skipping received transaction %d from delegate %d \n", d.Id, msg.Id, msg.DelegateId)
 			}
 		}

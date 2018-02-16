@@ -3,10 +3,14 @@ package main
 import (
 	log "github.com/sirupsen/logrus"
 	"sync"
+	"fmt"
 )
 
 type VoteCounter struct {
 	votes	  	map[int]*Votes
+	TotalPendingBlocks int
+	CompletedBlocks int
+	InvalidBlocks int
 	Channel 	chan Vote
 	quit        chan bool
 }
@@ -45,6 +49,7 @@ func (vc *VoteCounter)AddVoting(t Transaction, nbrDelegates int) {
 		NbrDelegates: 	nbrDelegates,
 	}
 
+
 	mutex.Lock ()
 	vc.votes[t.Id] = &votes
 	mutex.Unlock()
@@ -58,6 +63,11 @@ func (vc *VoteCounter) Start() {
 				// we have received a vote.
 				mutex.Lock ()
 				v := vc.votes[vote.TransactionId]
+
+				if v.VoteCount == 0 {
+					vc.TotalPendingBlocks++
+				}
+
 				mutex.Unlock()
 
 				log.Printf("Received Vote for transaction: %d value %t from delegate %d with value %d", vote.TransactionId, vote.VoteYesNo, vote.DelegateId, v.Transaction.Value)
@@ -67,9 +77,13 @@ func (vc *VoteCounter) Start() {
 				if(v.NbrDelegates == v.VoteCount) {
 					if v.isValid() {
 						updateAccounts(v.Transaction)
+
 					} else {
 						log.Printf("The Delegates voted this transaction as invalid %v", v.Transaction )
+						fmt.Println( "Vote Failed")
 					}
+					vc.CompletedBlocks++
+
 				}
 			case <-vc.quit:
 				// we have received a signal to stop

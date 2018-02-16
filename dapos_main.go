@@ -69,7 +69,7 @@ func main() {
 		go delegate.Start()
 	}
 
-	for i := 1; i < 100; i++ {
+	for i := 1; i < 1000; i++ {
 		runSome(voteCounter, delegate_count, c,i)
 //		time.Sleep(time.Second * 5)
 		fmt.Println( i)
@@ -83,8 +83,9 @@ func runSome(voteCounter *VoteCounter, delegateCount int, c chan Transaction, tr
 
 	from := getRandomAccount(nil)
 	to := getRandomAccount(from)
-	amount := GetRandomNumber(20)
+	//amount := GetRandomNumber(20)
 
+	amount := 1
 
 	log.WithFields( log.Fields { "From " : from.Name, "To " : to.Name, "Amount " : amount}).Info ("Transaction receipt")
 

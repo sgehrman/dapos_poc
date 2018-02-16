@@ -30,6 +30,8 @@ type Delegate struct {
 	CurrentBlock    *Block
 	Channel     chan Transaction
 	VoteChannel     chan Vote
+	FOO int
+
 }
 
 type Account struct {
