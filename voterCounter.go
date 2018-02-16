@@ -2,9 +2,11 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
-	"sync"
 	"fmt"
+	"sync"
 )
+
+var vote_mutex = &sync.Mutex {}
 
 type VoteCounter struct {
 	votes	  	map[int]*Votes
@@ -36,8 +38,6 @@ func NewVoteCounter(c chan Vote) *VoteCounter {
 	}
 }
 
-var mutex = &sync.Mutex {}
-
 func init () {
 }
 
@@ -50,9 +50,9 @@ func (vc *VoteCounter)AddVoting(t Transaction, nbrDelegates int) {
 	}
 
 
-	mutex.Lock ()
+	vote_mutex.Lock ()
 	vc.votes[t.Id] = &votes
-	mutex.Unlock()
+	vote_mutex.Unlock()
 }
 
 func (vc *VoteCounter) Start() {
@@ -61,14 +61,14 @@ func (vc *VoteCounter) Start() {
 			select {
 			case vote := <-vc.Channel:
 				// we have received a vote.
-				mutex.Lock ()
+				vote_mutex.Lock ()
 				v := vc.votes[vote.TransactionId]
 
 				if v.VoteCount == 0 {
 					vc.TotalPendingBlocks++
 				}
 
-				mutex.Unlock()
+				vote_mutex.Unlock()
 
 				log.Printf("Received Vote for transaction: %d value %t from delegate %d with value %d", vote.TransactionId, vote.VoteYesNo, vote.DelegateId, v.Transaction.Value)
 				v.VoteYesNo = append(v.VoteYesNo, vote.VoteYesNo)

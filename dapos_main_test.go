@@ -6,6 +6,7 @@ import "strconv"
 import "time"
 import (
 	"fmt"
+
 )
 //import "time"
 
@@ -14,6 +15,7 @@ var voteChannel chan Vote = make(chan Vote)
 var voteCounter= NewVoteCounter(voteChannel)
 var delegate_count = 4
 var delegates []*Delegate
+
 
 type Timer struct {
 	state	bool
@@ -95,7 +97,7 @@ func createAccounts ( num int){
 		// update global names
 		// TODO: change all this when we move away from POC
 		names = append ( names, strconv.Itoa (i))
-		CreateAccount( strconv.Itoa(i), 1000000)
+		CreateAccount( strconv.Itoa(i), 10000000900)
 	}
 }
 
@@ -181,10 +183,15 @@ func TestSequencedSlam ( t *testing.T ) {
 
 	}
 
+	time.Sleep(time.Second * 1)
+
 	duration := duration(start)
 	fmt.Println(duration)
 
-	for {
+	fmt.Println( "Total %d", voteCounter.TotalPendingBlocks)
+	fmt.Println( "Completed %d", voteCounter.CompletedBlocks)
+
+	/*for {
 		if voteCounter.TotalPendingBlocks >= transaction_count-1 {
 			break
 		}
@@ -193,13 +200,12 @@ func TestSequencedSlam ( t *testing.T ) {
 	}
 
 
-	time.Sleep(time.Second * 1 )
-
-	time.Sleep(time.Second * 10 )
-
+	time.Sleep(time.Second * 5 )
+*/
 
 
-	auditVotes(voteCounter)
+
+	//auditVotes(voteCounter)
 
 
 

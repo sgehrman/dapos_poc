@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"time"
 	log "github.com/sirupsen/logrus"
+	"sync"
 )
+
+var del_mutex = &sync.Mutex {}
 
 func NewDelegate(id int, nodes int, c chan Transaction,  v chan Vote) (delegate *Delegate) {
 	premineWallet := Transaction{0, "dl", "Genesis", 100, time.Now(), id, nodes}
@@ -29,7 +32,9 @@ func (d *Delegate)Start() {
 	log.Info ("Starting Node Listener for Delegate")
 
 	for {
+
 		msg := <- d.Channel
+
 		//if transaction came from non-delegate node (new)
 
 		if msg.DelegateId > d.PeerCount {
@@ -84,6 +89,9 @@ func (d *Delegate)validateBlockAndTransmit(msg Transaction, sourceType string) {
 
 func seenTransaction(id int, genesisBlock *Block) bool {
 	pointerBlock := genesisBlock
+
+	//fmt.Println("pointerBlock.Transaction.Id == id", pointerBlock.Transaction.Id, id)
+
 	for pointerBlock != nil {
 		if pointerBlock.Transaction.Id == id {
 			return true
