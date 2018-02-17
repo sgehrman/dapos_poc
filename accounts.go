@@ -18,7 +18,7 @@ var GenesisBlock = &Block{
 		"dl",
 		100,
 		time.Now(),
-		nil,
+		[]WalletAddress{},
 	},
 }
 
@@ -30,12 +30,13 @@ func CreateNodeAndAddToList(newMember string, initialBalance int) {
 	}
 
 	node := Node{
-		GenesisBlock: GenesisBlock,
-		CurrentBlock: nil,
-		TxChannel:    make(chan Transaction),
-		VoteChannel:  make(chan Vote),
-		Wallet:       wallet,
-		IsDelegate:   false,
+		GenesisBlock:    GenesisBlock,
+		CurrentBlock:    GenesisBlock,
+		TxChannel:       make(chan Transaction),
+		VoteChannel:     make(chan Vote),
+		Wallet:          wallet,
+		IsDelegate:      false,
+		TxFromChainById: map[int]*Transaction{},
 	}
 
 	getNodes()[newMember] = &node

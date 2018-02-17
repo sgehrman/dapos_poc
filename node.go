@@ -25,29 +25,33 @@ import (
 func (node *Node) StartListenForTx() {
 	fmt.Println("StartListenForTx()")
 
-	for {
-		tx := <-node.TxChannel
+	go func() {
+		for {
+			tx := <-node.TxChannel
+			fmt.Println(fmt.Sprintf("GotTX()         | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet.Id))
 
-		if !getNodeByAddress(tx.From).IsDelegate {
-			// if transaction came from non-delegate node (new)
-			node.validateBlockAndTransmit(tx, "non-delegate")
+			if !getNodeByAddress(tx.From).IsDelegate {
+				// if transaction came from non-delegate node (new)
+				node.validateBlockAndTransmit(tx, "non-delegate")
 
-		} else {
-			//transactions from delegates should be reevaluated
-			//TODO: process unseen transactions from other delegates
-			//if transaction came from another delegate,
-			// check to see if it's been seen before then process it
-
-			if _, ok := node.TxToChain[tx.Id]; !ok {
-				node.validateBlockAndTransmit(tx, "delegate")
 			} else {
-				//fmt.Printf("delegate %d: skipping received transaction %d from delegate %d \n", d.Id, tx.Id, tx.DelegateId)
+				//transactions from delegates should be reevaluated
+				//TODO: process unseen transactions from other delegates
+				//if transaction came from another delegate,
+				// check to see if it's been seen before then process it
+
+				if _, ok := node.TxFromChainById[tx.Id]; !ok {
+					node.validateBlockAndTransmit(tx, "delegate")
+				} else {
+					//fmt.Printf("delegate %d: skipping received transaction %d from delegate %d \n", d.Id, tx.Id, tx.DelegateId)
+				}
 			}
 		}
-	}
+	}()
 }
 
 func (node *Node) validateBlockAndTransmit(tx Transaction, sourceType string) {
+	fmt.Println(fmt.Sprintf("validateBlock() | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet.Id))
 
 	valid := node.processTransaction(tx)
 
@@ -66,20 +70,30 @@ func (node *Node) validateBlockAndTransmit(tx Transaction, sourceType string) {
 		node.CurrentBlock.Next_block = &newBlock
 		node.CurrentBlock = &newBlock
 
-		//set the delegate id to current id and broadcast the valid transaction to other nodes
-		for k, _ := range getNodes() {
-			if getNodes()[k].IsDelegate {
-				getNodes()[k].TxChannel <- tx
-			}
-		}
-		// for i := 0; i < node.PeerCount-1; i++ {
-		// 	go func() { node.Channel <- tx }()
-		// }
+		node.TxFromChainById[tx.Id] = &tx
 
-		node.VoteChannel <- Vote{
-			TransactionId: tx.Id,
-			VoteYesNo:     true,
-			DelegateId:    node.Wallet.Id,
+		node.VoteCounterProcessTx(&tx)
+
+		//set the delegate id to current id and broadcast the valid transaction to other nodes
+
+		for k, _ := range getNodes() {
+			destinationNode := getNodes()[k]
+			if destinationNode.IsDelegate &&
+				destinationNode.Wallet.Id != node.Wallet.Id {
+
+				// go func() {
+				// 	fmt.Println(fmt.Sprintf("sendTx() | TX-ID: %d | Node-ID: %s", tx.Id, node.Wallet.Id))
+				// 	destinationNode.TxChannel <- tx
+				// }()
+
+				go func() {
+					fmt.Println(fmt.Sprintf("sendVote()-true | Tx_%d(%s -> %s) | %s -> %s", tx.Id, tx.From, tx.To, node.Wallet.Id, destinationNode.Wallet.Id))
+					destinationNode.VoteChannel <- Vote{
+						TransactionId: tx.Id,
+						YesNo:         true,
+					}
+				}()
+			}
 		}
 	} else {
 		log.WithFields(log.Fields{
@@ -91,13 +105,22 @@ func (node *Node) validateBlockAndTransmit(tx Transaction, sourceType string) {
 		}).Info("Received an invalid transaction")
 		//		fmt.Printf("delegate %d: received invalid transaction %d from an %s %d with value: %d\n", d.Id, tx.Id, sourceType, tx.DelegateId, tx.Value)
 
-		node.VoteChannel <- Vote{
-			TransactionId: tx.Id,
-			VoteYesNo:     false,
-			DelegateId:    node.Wallet.Id,
-		}
+		go func() {
+			for k, _ := range getNodes() {
+				destinationNode := getNodes()[k]
+				if destinationNode.IsDelegate &&
+					destinationNode.Wallet.Id != node.Wallet.Id {
+					go func() {
+						fmt.Println(fmt.Sprintf("sendVote()-false | Tx_%d(%s -> %s) | %s -> %s", tx.Id, tx.From, tx.To, node.Wallet.Id, destinationNode.Wallet.Id))
+						destinationNode.VoteChannel <- Vote{
+							TransactionId: tx.Id,
+							YesNo:         false,
+						}
+					}()
+				}
+			}
+		}()
 	}
-
 }
 
 // func seenTransaction(id int, genesisBlock *Block) bool {
@@ -119,6 +142,7 @@ func (node *Node) validateBlockAndTransmit(tx Transaction, sourceType string) {
 //checking that transaction and the ones following it for validity
 //return true if transaction is valid
 func (node *Node) processTransaction(tx Transaction) bool {
+	// fmt.Println(fmt.Sprintf("processTransaction() | TX-ID: %d | Node-ID: %s", tx.Id, node.Wallet.Id))
 
 	//don't validate transactions on 0 or less
 	if tx.Value <= 0 {
@@ -192,7 +216,7 @@ func (node *Node) processTransaction(tx Transaction) bool {
 		for pointerBlock.Next_block != nil {
 			//is the following transaction valid?
 			if newBalances[pointerBlock.Transaction.From] >= pointerBlock.Transaction.Value {
-				fmt.Printf("yay! transaction %d is still valid \n", pointerBlock.Transaction.Id)
+				// fmt.Printf("yay! transaction %d is still valid \n", pointerBlock.Transaction.Id)
 				//yay! transaction is valid - update balances and continue onto next block
 				newBalances[pointerBlock.Transaction.From] -= pointerBlock.Transaction.Value
 				newBalances[pointerBlock.Transaction.To] += pointerBlock.Transaction.Value

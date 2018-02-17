@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -70,18 +72,18 @@ func main() {
 	fmt.Println("DAPoS Simulation!")
 
 	// Create Nodes
-	CreateNodeAndAddToList("Bob", 100)
+	CreateNodeAndAddToList("BobSt", 100)
 	CreateNodeAndAddToList("Chris", 100)
-	CreateNodeAndAddToList("Greg", 100)
-	CreateNodeAndAddToList("Muhammad", 100)
-	CreateNodeAndAddToList("Nicolae", 100)
-	CreateNodeAndAddToList("Zane", 100)
+	CreateNodeAndAddToList("GregM", 100)
+	CreateNodeAndAddToList("Muham", 100)
+	CreateNodeAndAddToList("Nicol", 100)
+	CreateNodeAndAddToList("ZaneW", 100)
 	CreateNodeAndAddToList("Avery", 100)
 
 	// Elect Delegates
-	ElectDelegate("Bob")
+	ElectDelegate("BobSt")
 	ElectDelegate("Chris")
-	ElectDelegate("Greg")
+	ElectDelegate("GregM")
 	ElectDelegate("Avery")
 
 	var delegates = []WalletAddress{}
@@ -92,52 +94,68 @@ func main() {
 	}
 
 	// Run Transactions - DONE by nodes, not Delegates
-	for transactionID := 1; transactionID < 1000; transactionID++ {
-		var node = getRandomNonDelegateNode()
-		node.SendRandomTransaction(transactionID, delegates)
-	}
-}
+	go func() {
+		time.Sleep(time.Second * 5)
 
-func sendTransaction(transactionId int, delegates []WalletAddress) {
-
-	fromWallet := getRandomWallet()
-	toWallet := getRandomWallet()
-	//amount := GetRandomNumber(20)
-
-	amount := 1
-
-	log.WithFields(log.Fields{
-		"From ":   fromWallet.Id,
-		"To ":     toWallet.Id,
-		"Amount ": amount,
-	}).Info("Transaction receipt")
-
-	transaction := Transaction{
-		transactionId,
-		fromWallet.Id,
-		toWallet.Id,
-		amount,
-		time.Now(),
-		delegates,
-	}
-
-	log.WithFields(log.Fields{
-		"From ":         fromWallet.Id,
-		"From Balance ": fromWallet.Balance,
-		"To ":           toWallet.Id,
-		"To Balance":    toWallet.Balance,
-	}).Info("Balances")
-
-	log.WithFields(log.Fields{
-		"Transaction ID":    transaction.Id,
-		"Transaction From":  transaction.From,
-		"Transaction To":    transaction.To,
-		"Transaction Value": transaction.Value,
-	}).Info("Sending Transaction")
-
-	for k, _ := range getNodes() {
-		if getNodes()[k].IsDelegate {
-			getNodes()[k].TxChannel <- transaction
+		for transactionID := 1; transactionID < 2; transactionID++ {
+			var node = getRandomNonDelegateNode()
+			go node.SendRandomTransaction(transactionID, delegates)
 		}
-	}
+	}()
+
+	// Wait for Ctrl + C
+	sigs := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		sig := <-sigs
+		fmt.Println()
+		fmt.Println(sig)
+		done <- true
+	}()
+	<-done
 }
+
+// func sendTransaction(transactionId int, delegates []WalletAddress) {
+
+// 	fromWallet := getRandomWallet()
+// 	toWallet := getRandomWallet()
+// 	//amount := GetRandomNumber(20)
+
+// 	amount := 1
+
+// 	log.WithFields(log.Fields{
+// 		"From ":   fromWallet.Id,
+// 		"To ":     toWallet.Id,
+// 		"Amount ": amount,
+// 	}).Info("Transaction receipt")
+
+// 	transaction := Transaction{
+// 		transactionId,
+// 		fromWallet.Id,
+// 		toWallet.Id,
+// 		amount,
+// 		time.Now(),
+// 		delegates,
+// 	}
+
+// 	log.WithFields(log.Fields{
+// 		"From ":         fromWallet.Id,
+// 		"From Balance ": fromWallet.Balance,
+// 		"To ":           toWallet.Id,
+// 		"To Balance":    toWallet.Balance,
+// 	}).Info("Balances")
+
+// 	log.WithFields(log.Fields{
+// 		"Transaction ID":    transaction.Id,
+// 		"Transaction From":  transaction.From,
+// 		"Transaction To":    transaction.To,
+// 		"Transaction Value": transaction.Value,
+// 	}).Info("Sending Transaction")
+
+// 	for k, _ := range getNodes() {
+// 		if getNodes()[k].IsDelegate {
+// 			getNodes()[k].TxChannel <- transaction
+// 		}
+// 	}
+// }

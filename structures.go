@@ -35,6 +35,6 @@ type Node struct {
 	VoteChannel  chan Vote
 	Wallet       WalletAccount
 
-	IsDelegate bool
-	TxToChain  map[int]*Transaction
+	IsDelegate      bool
+	TxFromChainById map[int]*Transaction
 }
