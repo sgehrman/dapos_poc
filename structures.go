@@ -2,45 +2,39 @@ package main
 
 import (
 	"time"
-	"fmt"
-//	"github.com/aws/aws-sdk-go/service/medialive"
+	//	"github.com/aws/aws-sdk-go/service/medialive"
 )
 
-//block struct to keep the linked list
+type WalletAddress string
+
+type WalletAccount struct {
+	Id      WalletAddress
+	Name    string
+	Balance int
+}
+
 type Block struct {
-	Prev_block *Block
-	Next_block *Block
+	Prev_block  *Block
+	Next_block  *Block
 	Transaction Transaction
 }
 
 type Transaction struct {
 	Id         int
-	From       string
-	To         string
+	From       WalletAddress // $5
+	To         WalletAddress
 	Value      int
 	Time       time.Time
-	DelegateId int
-	Validators int
+	Validators []WalletAddress
 }
 
-type Delegate struct {
-	Id              int
-	PeerCount       int
-	GenesisBlock    *Block
-	CurrentBlock    *Block
-	Channel     chan Transaction
-	VoteChannel     chan Vote
-	FOO int
+type Node struct {
+	GenesisBlock *Block
+	CurrentBlock *Block
+	TxChannel    chan Transaction
+	VoteChannel  chan Vote
+	Wallet       WalletAccount
 
-}
-
-type Account struct {
-	Id           string
-	Name         string
-	Balance      int
-	Transactions []Transaction
-}
-
-func (b Block) PrintBlock(delegateId int) {
-	fmt.Printf("[ DelegateId=%d \tblock -> %d %d]\n", delegateId, b.Transaction.Id, b.Transaction.Value)
+	IsDelegate bool
+	TxToChain  map[int]*Transaction
 }

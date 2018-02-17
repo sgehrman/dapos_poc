@@ -3,40 +3,57 @@ package main
 import (
 	"sync"
 	"time"
-	"fmt"
 )
 
-type singleton struct {
-	accounts map[string]*Account
-}
+var nodes *map[string]*Node
 
-var instance *singleton
 var once sync.Once
 
-func GetAccount(member string) *Account {
-	for _, acct := range getAccounts().accounts {
-		if(acct.Name == member) {
-			return acct
-		}
+var GenesisBlock = &Block{
+	Prev_block: nil,
+	Next_block: nil,
+	Transaction: Transaction{
+		0,
+		"dl",
+		"dl",
+		100,
+		time.Now(),
+		nil,
+	},
+}
+
+func CreateNodeAndAddToList(newMember string, initialBalance int) {
+	wallet := WalletAccount{
+		WalletAddress(newMember),
+		newMember,
+		initialBalance,
 	}
-	panic(fmt.Sprintf("Account for %s not found", member))
 
+	node := Node{
+		GenesisBlock: GenesisBlock,
+		CurrentBlock: nil,
+		TxChannel:    make(chan Transaction),
+		VoteChannel:  make(chan Vote),
+		Wallet:       wallet,
+		IsDelegate:   false,
+	}
+
+	getNodes()[newMember] = &node
 }
 
-//need to do something better for transaction id
-func CreateAccount(newMember string, initialBalance int) {
-	new_wallet := Transaction{0, "dl", newMember, initialBalance, time.Now(), 0, 1}
-	txs := make([]Transaction, 0)
-	txs = append(txs, new_wallet)
-	acct := Account{"value", newMember, initialBalance, txs}
-	getAccounts().accounts[newMember] = &acct
+func ElectDelegate(newMember string) {
+	getNodes()[newMember].IsDelegate = true
+	getNodes()[newMember].StartListenForTx()
+	getNodes()[newMember].StartVoteCounting()
 }
 
-
-func getAccounts() *singleton {
+func getNodes() map[string]*Node {
 	once.Do(func() {
-		instance = &singleton{}
-		instance.accounts = make(map[string]*Account, 0)
+		nodes = &map[string]*Node{}
 	})
-	return instance
+	return *nodes
+}
+
+func getNodeByAddress(address WalletAddress) *Node {
+	return getNodes()[string(address)]
 }
