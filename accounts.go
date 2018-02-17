@@ -37,6 +37,7 @@ func CreateNodeAndAddToList(newMember string, initialBalance int) {
 		Wallet:          wallet,
 		IsDelegate:      false,
 		TxFromChainById: map[int]*Transaction{},
+		AllVotes:        make(map[int]*Votes),
 	}
 
 	getNodes()[newMember] = &node

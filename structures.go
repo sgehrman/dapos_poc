@@ -20,12 +20,12 @@ type Block struct {
 }
 
 type Transaction struct {
-	Id         int
-	From       WalletAddress // $5
-	To         WalletAddress
-	Value      int
-	Time       time.Time
-	Validators []WalletAddress
+	Id                int
+	From              WalletAddress
+	To                WalletAddress
+	Value             int
+	Time              time.Time
+	CurrentValidators []WalletAddress
 }
 
 type Node struct {
@@ -37,4 +37,5 @@ type Node struct {
 
 	IsDelegate      bool
 	TxFromChainById map[int]*Transaction
+	AllVotes        map[int]*Votes
 }

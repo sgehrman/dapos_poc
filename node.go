@@ -2,25 +2,9 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 )
-
-// func NewNode(peers int, c chan Transaction, v chan Vote) (delegate *Node) {
-// 	premineWallet := Transaction{0, "dl", "Genesis", 100, time.Now(), id, nodes}
-// 	genesisBlock := new(Block)
-// 	genesisBlock.Transaction = premineWallet
-
-// 	return &Node{
-// 		PeerCount:    peers,
-// 		GenesisBlock: genesisBlock,
-// 		CurrentBlock: genesisBlock,
-// 		Channel:      c,
-// 		VoteChannel:  v,
-// 		IsDelegate:   false,
-// 	}
-// }
 
 func (node *Node) StartListenForTx() {
 	fmt.Println("StartListenForTx()")
@@ -28,20 +12,22 @@ func (node *Node) StartListenForTx() {
 	go func() {
 		for {
 			tx := <-node.TxChannel
-			fmt.Println(fmt.Sprintf("GotTX()         | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet.Id))
 
 			if !getNodeByAddress(tx.From).IsDelegate {
 				// if transaction came from non-delegate node (new)
-				node.validateBlockAndTransmit(tx, "non-delegate")
 
+				fmt.Println(fmt.Sprintf("GotTX()-node    | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet.Id))
+				node.validateBlockAndTransmit(&tx, "non-delegate")
 			} else {
 				//transactions from delegates should be reevaluated
 				//TODO: process unseen transactions from other delegates
 				//if transaction came from another delegate,
 				// check to see if it's been seen before then process it
 
+				fmt.Println(fmt.Sprintf("GotTX()-dlgate  | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet.Id))
+
 				if _, ok := node.TxFromChainById[tx.Id]; !ok {
-					node.validateBlockAndTransmit(tx, "delegate")
+					node.validateBlockAndTransmit(&tx, "delegate")
 				} else {
 					//fmt.Printf("delegate %d: skipping received transaction %d from delegate %d \n", d.Id, tx.Id, tx.DelegateId)
 				}
@@ -50,7 +36,7 @@ func (node *Node) StartListenForTx() {
 	}()
 }
 
-func (node *Node) validateBlockAndTransmit(tx Transaction, sourceType string) {
+func (node *Node) validateBlockAndTransmit(tx *Transaction, sourceType string) {
 	fmt.Println(fmt.Sprintf("validateBlock() | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet.Id))
 
 	valid := node.processTransaction(tx)
@@ -66,25 +52,27 @@ func (node *Node) validateBlockAndTransmit(tx Transaction, sourceType string) {
 
 		//		fmt.Printf("delegate %d: received valid transaction %d from a %s node %d with value: %d\n", d.Id, d.CurrentBlock.Transaction.Id, sourceType, tx.DelegateId, tx.Value)
 		//save the transaction to the chain
-		newBlock := Block{nil, nil, tx}
+		newBlock := Block{nil, nil, *tx}
 		node.CurrentBlock.Next_block = &newBlock
 		node.CurrentBlock = &newBlock
 
-		node.TxFromChainById[tx.Id] = &tx
+		node.TxFromChainById[tx.Id] = tx
 
-		node.VoteCounterProcessTx(&tx)
+		node.VoteCounterProcessTx(tx)
 
 		//set the delegate id to current id and broadcast the valid transaction to other nodes
 
 		for k, _ := range getNodes() {
 			destinationNode := getNodes()[k]
 			if destinationNode.IsDelegate &&
-				destinationNode.Wallet.Id != node.Wallet.Id {
+				destinationNode.Wallet.Id != node.Wallet.Id &&
+				!contains(tx.CurrentValidators, destinationNode.Wallet.Id) {
 
-				// go func() {
-				// 	fmt.Println(fmt.Sprintf("sendTx() | TX-ID: %d | Node-ID: %s", tx.Id, node.Wallet.Id))
-				// 	destinationNode.TxChannel <- tx
-				// }()
+				go func() {
+					fmt.Println(fmt.Sprintf("sendTx()        | Tx_%d(%s -> %s) | %s -> %s", tx.Id, tx.From, tx.To, node.Wallet.Id, destinationNode.Wallet.Id))
+
+					destinationNode.TxChannel <- *tx
+				}()
 
 				go func() {
 					fmt.Println(fmt.Sprintf("sendVote()-true | Tx_%d(%s -> %s) | %s -> %s", tx.Id, tx.From, tx.To, node.Wallet.Id, destinationNode.Wallet.Id))
@@ -123,31 +111,19 @@ func (node *Node) validateBlockAndTransmit(tx Transaction, sourceType string) {
 	}
 }
 
-// func seenTransaction(id int, genesisBlock *Block) bool {
-// 	pointerBlock := genesisBlock
-// 	for pointerBlock != nil {
-// 		// fmt.Println("pointerBlock.Transaction.Id == id", pointerBlock.Transaction.Id, id)
-
-// 		if pointerBlock.Transaction.Id == id {
-// 			return true
-// 		}
-// 		pointerBlock = pointerBlock.Next_block
-// 	}
-
-// 	return false
-// }
-
 //processing the transaction consists of:
 //adding the transaction in it's proper place in the time-sorted linked list
 //checking that transaction and the ones following it for validity
 //return true if transaction is valid
-func (node *Node) processTransaction(tx Transaction) bool {
+func (node *Node) processTransaction(tx *Transaction) bool {
 	// fmt.Println(fmt.Sprintf("processTransaction() | TX-ID: %d | Node-ID: %s", tx.Id, node.Wallet.Id))
 
 	//don't validate transactions on 0 or less
 	if tx.Value <= 0 {
 		return false
 	}
+
+	tx.CurrentValidators = append(tx.CurrentValidators, node.Wallet.Id)
 
 	//new balance maping
 	newBalances := make(map[WalletAddress]int)
@@ -200,7 +176,7 @@ func (node *Node) processTransaction(tx Transaction) bool {
 	if newBalances[tx.From] >= tx.Value {
 
 		//if so make a new block and add it to the chain
-		new_valid_block := Block{pointerBlock, pointerBlock.Next_block, tx}
+		new_valid_block := Block{pointerBlock, pointerBlock.Next_block, *tx}
 		pointerBlock.Next_block = &new_valid_block
 		if new_valid_block.Next_block != nil {
 			new_valid_block.Next_block.Prev_block = &new_valid_block
@@ -238,30 +214,17 @@ func (node *Node) processTransaction(tx Transaction) bool {
 		//when finished, broadcast awesome new block and potentially broken transactions
 		return true
 
-	} else { //if new transaction is not valid, drop that bitch like it's hot
-		return false
 	}
+
+	//if new transaction is not valid, drop that bitch like it's hot
+	return false
 }
 
-func (node *Node) SendRandomTransaction(transactionId int, delegates []WalletAddress) {
-
-	fromWallet := node.Wallet
-	toWallet := getRandomWallet()
-
-	amount := 1
-
-	transaction := Transaction{
-		transactionId,
-		fromWallet.Id,
-		toWallet.Id,
-		amount,
-		time.Now(),
-		delegates,
-	}
-
-	for k, _ := range getNodes() {
-		if getNodes()[k].IsDelegate {
-			getNodes()[k].TxChannel <- transaction
+func contains(arr []WalletAddress, str WalletAddress) bool {
+	for _, a := range arr {
+		if a == str {
+			return true
 		}
 	}
+	return false
 }
