@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -17,7 +18,6 @@ type Vote struct {
 }
 
 func (node *Node) StartVoteCounting() {
-	fmt.Println("StartVoteCounting()")
 	go func() {
 		for {
 			select {
@@ -59,24 +59,32 @@ func (node *Node) StartVoteCounting() {
 
 func (node *Node) VoteCounterProcessTx(tx *Transaction) {
 
+	var logLines = []string{}
+	var additionalLogLines = []string{}
+
 	theVotesForTx := node.AllVotes[tx.Id]
 	if theVotesForTx != nil {
-		fmt.Println(fmt.Sprintf("GotVote()       | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet.Id))
+		logLines = append(logLines, fmt.Sprintf("GotVote()       | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet.Id))
 
 		var totalDelegates = len(tx.CurrentValidators)
 
 		if totalDelegates == len(theVotesForTx.TotalVotesSoFar) {
 			if theVotesForTx.isValid(totalDelegates) {
-				updateAccounts(node.TxFromChainById[tx.Id])
+				additionalLogLines = updateAccounts(node.TxFromChainById[tx.Id])
 
 				fromAcct := (*getNodes()[string(tx.From)]).Wallet
 				toAcct := (*getNodes()[string(tx.To)]).Wallet
-				fmt.Println(fmt.Sprintf("ProcessedVote() | Tx_%d(%s -> %s) | %s (%d, %d)", tx.Id, tx.From, tx.To, node.Wallet.Id, fromAcct.Balance, toAcct.Balance))
+				logLines = append(logLines, fmt.Sprintf("ProcessedVote() | Tx_%d(%s -> %s) | %s (%d, %d)", tx.Id, tx.From, tx.To, node.Wallet.Id, fromAcct.Balance, toAcct.Balance))
 			} else {
-				fmt.Println("Vote Failed")
+				logLines = append(logLines, fmt.Sprintf("Vote Failed"))
 			}
 		}
 	}
+
+	additionalLogLines = prefixLinesWith(additionalLogLines, "    ")
+	logLines = append(logLines, additionalLogLines...)
+
+	log.Info(strings.Join(logLines, "\n"))
 }
 
 func (v Votes) isValid(totalDelegates int) bool {
@@ -97,12 +105,17 @@ func (v Votes) isValid(totalDelegates int) bool {
 	return false
 }
 
-func updateAccounts(t *Transaction) {
-	log.Printf("Update Accounts: %d", t.Id)
+func updateAccounts(t *Transaction) []string {
+	var logLines = []string{}
+
+	logLines = append(logLines, fmt.Sprintf("Update Accounts: %d", t.Id))
+
 	fromAcct := (*getNodes()[string(t.From)]).Wallet
 	toAcct := (*getNodes()[string(t.To)]).Wallet
 	fromAcct.Balance -= t.Value
 	toAcct.Balance += t.Value
 	// fromAcct.Transactions = append(fromAcct.Transactions, t)
 	// toAcct.Transactions = append(toAcct.Transactions, t)
+
+	return logLines
 }

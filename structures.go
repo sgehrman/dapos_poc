@@ -2,7 +2,6 @@ package main
 
 import (
 	"time"
-	//	"github.com/aws/aws-sdk-go/service/medialive"
 )
 
 type WalletAddress string
@@ -14,8 +13,8 @@ type WalletAccount struct {
 }
 
 type Block struct {
-	Prev_block  *Block
-	Next_block  *Block
+	Prev        *Block
+	Next        *Block
 	Transaction Transaction
 }
 
