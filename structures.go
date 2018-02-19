@@ -25,6 +25,7 @@ type Transaction struct {
 	Value             int
 	Time              time.Time
 	CurrentValidators []WalletAddress
+	TxInfoSender      WalletAddress
 }
 
 type Node struct {

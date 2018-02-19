@@ -10,7 +10,10 @@ import (
 )
 
 func init() {
-	log.SetFormatter(&log.TextFormatter{})
+	formatter := &log.TextFormatter{
+		FullTimestamp: true,
+	}
+	log.SetFormatter(formatter)
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.InfoLevel)
 }
@@ -35,7 +38,7 @@ func main() {
 	}
 
 	// Elect Delegates
-	var nrOfDelegates = 2
+	var nrOfDelegates = 3
 	for count := 0; count < nrOfDelegates; count++ {
 		var node = getRandomNonDelegateNode(nil)
 		ElectDelegate(string(node.Wallet.Id))
@@ -59,6 +62,8 @@ func main() {
 		for _, node := range getNodes() {
 			if node.IsDelegate {
 				delegates = append(delegates, node.Wallet.Id)
+
+				break
 			}
 		}
 

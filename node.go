@@ -15,7 +15,7 @@ func (node *Node) StartListenForTx() {
 			var logLines = []string{}
 			var additionalLogLines = []string{}
 
-			if !getNodeByAddress(tx.From).IsDelegate {
+			if !getNodeByAddress(tx.TxInfoSender).IsDelegate {
 				// if transaction came from non-delegate node (new)
 
 				logLines = append(logLines, fmt.Sprintf("GotTX()-node    | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet.Id))
@@ -78,6 +78,7 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction, sourceType string) [
 
 				logLines = append(logLines, fmt.Sprintf("sendTx()        | Tx_%d(%s -> %s) | %s -> %s", tx.Id, tx.From, tx.To, node.Wallet.Id, destinationNode.Wallet.Id))
 				go func() {
+					tx.TxInfoSender = node.Wallet.Id
 					destinationNode.TxChannel <- *tx
 				}()
 

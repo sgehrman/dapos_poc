@@ -75,6 +75,7 @@ func sendRandomTransaction(fromWallet WalletAddress, toWallet WalletAddress, tra
 		amount,
 		time.Now(),
 		[]WalletAddress{},
+		fromNode.Wallet.Id,
 	}
 
 	for _, v := range delegates {
@@ -106,6 +107,7 @@ var GenesisBlock = &Block{
 		100,
 		time.Now(),
 		[]WalletAddress{},
+		"dl",
 	},
 }
 
@@ -145,5 +147,6 @@ func getNodes() map[string]*Node {
 }
 
 func getNodeByAddress(address WalletAddress) *Node {
-	return getNodes()[string(address)]
+	var theNode = getNodes()[string(address)]
+	return theNode
 }
