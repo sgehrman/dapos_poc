@@ -30,7 +30,7 @@ type Transaction struct {
 
 type Node struct {
 	GenesisBlock *Block
-	CurrentBlock *Block
+	LastBlock    *Block
 	TxChannel    chan Transaction
 	VoteChannel  chan Vote
 	Wallet       WalletAccount

@@ -120,7 +120,7 @@ func CreateNodeAndAddToList(newMember string, initialBalance int) {
 
 	node := Node{
 		GenesisBlock:    GenesisBlock,
-		CurrentBlock:    nil,
+		LastBlock:       nil,
 		TxChannel:       make(chan Transaction),
 		VoteChannel:     make(chan Vote),
 		Wallet:          wallet,
@@ -128,7 +128,7 @@ func CreateNodeAndAddToList(newMember string, initialBalance int) {
 		TxFromChainById: map[int]*Transaction{},
 		AllVotes:        make(map[int]*Votes),
 	}
-	node.CurrentBlock = node.GenesisBlock
+	node.LastBlock = node.GenesisBlock
 
 	getNodes()[newMember] = &node
 }
