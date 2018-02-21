@@ -44,11 +44,18 @@ func getRandomNode(nodeToIgnore *Node) *Node {
 	nodes := getNodes()
 	nodesNames := getDictKeysAsList()
 
-	var theNode *Node
-	randomNum := GetRandomNumber(len(nodes))
-	theNode = getNodes()[nodesNames[randomNum]]
+	var theNode *Node = nodeToIgnore
+	for {
+		randomNum := GetRandomNumber(len(nodes))
+		newNode := getNodes()[nodesNames[randomNum]]
+		if theNode == nil {
+			return newNode
+		}
 
-	return theNode
+		if newNode.Wallet != theNode.Wallet{
+			return newNode
+			}
+		}
 }
 
 func sendRandomTransaction(fromWallet string, toWallet string, transactionId int, amount int, delegate *Node) {
@@ -105,6 +112,7 @@ func CreateNodeAndAddToList(newMember string) {
 
 	node.AllWallets["dl   "] = startingBalance
 	getNodes()[newMember] = &node
+	//since all nodes are delegates we initialize a node with listening to transactions
 	node.StartListenForTx()
 }
 

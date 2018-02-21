@@ -7,7 +7,7 @@ import (
 )
 
 func (node *Node) StartListenForTx() {
-
+	//gets initiated on node initialization
 	node.LogLines = append(node.LogLines, fmt.Sprintf("StartListenForTx - Delegate - %s", node.Wallet))
 
 	go func() {
@@ -66,7 +66,8 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 		if node.TxCount == 1 {
 			node.StartTime = time.Now()
 		}
-		if node.TxCount == 999 {
+
+		if node.TxCount >= (NrOfTx - 1) {
 			logLines = append(logLines, fmt.Sprintf("Node %s thinks balance of BobSt: %d, Chris: %d, GregM: %d, Muham: %d \n",
 				node.Wallet,
 				node.AllWallets["BobSt"],
@@ -82,7 +83,9 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 		// set the delegate id to current id and broadcast the valid transaction to other nodes
 		for k, _ := range getNodes() {
 			destinationNode := getNodes()[k]
-
+			if destinationNode.Wallet == node.Wallet{
+				continue
+			}
 			logLines = append(logLines, fmt.Sprintf("sendTx()        | Tx_%d(%s -> %s) | %s -> %s", tx.Id, tx.From, tx.To, node.Wallet, destinationNode.Wallet))
 			go func() {
 				destinationNode.TxChannel <- *tx
@@ -106,6 +109,7 @@ func (node *Node) validate(tx *Transaction) bool {
 	//check if transaction goes at end of list, then AllWallets can check validity
 	//if tx.Time.After(node.LastBlock.Transaction.Time) {
 	if true {
+
 		if node.AllWallets[tx.From] < tx.Value { //sender doesn't have enough money
 			return false
 		} else { //transaction is valid!!!
@@ -129,6 +133,12 @@ func (node *Node) validate(tx *Transaction) bool {
 
 		//start with node.AllWallets and iterate backwards from node.LastBlock until
 		//the state of the chain at time of transaction is discovered
+		/*
+		Node GregM thinks balance of BobSt: 998, Chris: 1003, GregM: 1000, Muham: 999
+		Node Muham thinks balance of BobSt: 998, Chris: 1003, GregM: 1000, Muham: 999
+		Node BobSt thinks balance of BobSt: 998, Chris: 1003, GregM: 1000, Muham: 999
+		Node Chris thinks balance of BobSt: 998, Chris: 1003, GregM: 1000, Muham: 999
+		*/
 
 	}
 
