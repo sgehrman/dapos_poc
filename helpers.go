@@ -1,24 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"sync"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
-func logSeparator() {
-	log.Info("~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~")
+func log_SeparatorLine() {
+	fmt.Println("~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~")
 }
-func prefixLinesWith(lines []string, prefix string) []string {
+
+func prefixLinesWith(lines []string, prefixFirstLine string, prefixAllLines string) []string {
 	var prefixedLines = []string{}
 
 	for index, line := range lines {
 		if index == 0 {
-			prefixedLines = append(prefixedLines, line)
+			prefixedLines = append(prefixedLines, prefixFirstLine+line)
 		} else {
-			prefixedLines = append(prefixedLines, prefix+line)
+			prefixedLines = append(prefixedLines, prefixAllLines+line)
 		}
 	}
 
@@ -62,12 +62,12 @@ func sendRandomTransaction(fromWallet string, toWallet string, transactionId int
 	}
 
 	go func() {
-		log.Infof("sendRandomTx()  | Tx_%d(%s -> %s) | send to delegate -> %s",
+		fmt.Println(fmt.Sprintf("sendRandomTx()  | Tx_%d(%s -> %s) | send to delegate -> %s",
 			transaction.Id,
 			transaction.From,
 			transaction.To,
 			delegate.Wallet,
-		)
+		))
 		delegate.TxChannel <- transaction
 	}()
 }
@@ -85,25 +85,25 @@ func CreateNodeAndAddToList(newMember string) {
 		Next: nil,
 		Transaction: &Transaction{
 			0,
-			"dl",
-			"dl",
+			"dl   ",
+			"dl   ",
 			startingBalance,
 			time.Now(),
 		},
 	}
 
 	node := Node{
-		GenesisBlock:    	GenesisBlock,
-		LastBlock:       	&GenesisBlock,
-		TxChannel:       	make(chan Transaction),
-		TxCount:			0,
-		Wallet:       		string(newMember),
-		IsDelegate: 		true,
-		TxFromChainById:	map[int]*Transaction{},
-		AllWallets:			map[string]int{},
+		GenesisBlock:    GenesisBlock,
+		LastBlock:       &GenesisBlock,
+		TxChannel:       make(chan Transaction),
+		TxCount:         0,
+		Wallet:          string(newMember),
+		IsDelegate:      true,
+		TxFromChainById: map[int]*Transaction{},
+		AllWallets:      map[string]int{},
 	}
 
-	node.AllWallets["dl"] = startingBalance
+	node.AllWallets["dl   "] = startingBalance
 	getNodes()[newMember] = &node
 	node.StartListenForTx()
 }

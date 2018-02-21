@@ -5,17 +5,17 @@ import (
 )
 
 type Block struct {
-	Prev        	*Block
-	Next        	*Block
-	Transaction		*Transaction
+	Prev        *Block
+	Next        *Block
+	Transaction *Transaction
 }
 
 type Transaction struct {
-	Id              int
-	From            string
-	To              string
-	Value           int
-	Time            time.Time
+	Id    int
+	From  string
+	To    string
+	Value int
+	Time  time.Time
 }
 
 type Node struct {
@@ -23,10 +23,12 @@ type Node struct {
 	LastBlock    *Block
 	TxChannel    chan Transaction
 	Wallet       string
-	TxCount		 int
-	StartTime	 time.Time
+	TxCount      int
+	StartTime    time.Time
 
 	IsDelegate      bool
 	TxFromChainById map[int]*Transaction
-	AllWallets		map[string]int
+	AllWallets      map[string]int
+
+	LogLines []string
 }

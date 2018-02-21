@@ -2,36 +2,33 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"time"
 )
 
 func (node *Node) StartListenForTx() {
-	fmt.Println("StartListenForTx")
+
+	node.LogLines = append(node.LogLines, fmt.Sprintf("StartListenForTx - Delegate - %s", node.Wallet))
 
 	go func() {
 		for {
 			tx := <-node.TxChannel
 
-			var logLines = []string{}
 			var additionalLogLines = []string{}
 
-			logLines = append(logLines, fmt.Sprintf("GotTX()-node    | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet))
-
+			node.LogLines = append(node.LogLines, fmt.Sprintf("    GotTX()-node    | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet))
 
 			seen := node.checkIfValidated(tx.Id)
+
 			if seen { //if the tx has already been validated, log and do nothing
-				additionalLogLines = append(additionalLogLines, fmt.Sprintf("delegate %s: skipping received transaction %d", node.Wallet, tx.Id))
+				node.LogLines = append(node.LogLines, fmt.Sprintf("        delegate %s: skipping received transaction %d", node.Wallet, tx.Id))
 			} else { //else check tx for validity
 				additionalLogLines = node.validateBlockAndTransmit(&tx)
 			}
 
-			additionalLogLines = prefixLinesWith(additionalLogLines, "    ")
-			logLines = append(logLines, additionalLogLines...)
+			additionalLogLines = prefixLinesWith(additionalLogLines, "        ", "            ")
 
-			log.Info(strings.Join(logLines, "\n"))
+			node.LogLines = append(node.LogLines, additionalLogLines...)
 		}
 	}()
 }
@@ -53,7 +50,7 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 	//call Validate(transaction)
 	valid := node.validate(tx)
 
-	additionalLogLines = prefixLinesWith(additionalLogLines, "    ")
+	additionalLogLines = prefixLinesWith(additionalLogLines, "", "    ")
 	logLines = append(logLines, additionalLogLines...)
 
 	if valid {
@@ -70,16 +67,16 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 			node.StartTime = time.Now()
 		}
 		if node.TxCount == 999 {
-			fmt.Printf("Node %s thinks balance of BobSt: %d, Chris: %d, GregM: %d, Muham: %d \n",
+			logLines = append(logLines, fmt.Sprintf("Node %s thinks balance of BobSt: %d, Chris: %d, GregM: %d, Muham: %d \n",
 				node.Wallet,
 				node.AllWallets["BobSt"],
 				node.AllWallets["Chris"],
 				node.AllWallets["GregM"],
-				node.AllWallets["Muham"])
+				node.AllWallets["Muham"]))
 
 			TimeToComplete := time.Since(node.StartTime)
-			fmt.Printf("Delegate %s processed %d transactions in %d time", node.Wallet, 4, TimeToComplete)
 
+			logLines = append(logLines, fmt.Sprintf("Delegate %s processed %d transactions in %d time", node.Wallet, 4, TimeToComplete))
 		}
 
 		// set the delegate id to current id and broadcast the valid transaction to other nodes
@@ -92,9 +89,8 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 			}()
 		}
 	} else {
-		logLines = append(logLines, fmt.Sprintf("Node ID: %s, Transaction: %d, From ID: %s, Value: %d", node.Wallet, tx.Id,  tx.From, tx.Value))
-		logLines = append(logLines, fmt.Sprintf("delegate %s: received invalid transaction %d with value: %d", node.Wallet, tx.Id,  tx.Value))
-
+		logLines = append(logLines, fmt.Sprintf("Node ID: %s, Transaction: %d, From ID: %s, Value: %d", node.Wallet, tx.Id, tx.From, tx.Value))
+		logLines = append(logLines, fmt.Sprintf("delegate %s: received invalid transaction %d with value: %d", node.Wallet, tx.Id, tx.Value))
 	}
 
 	return logLines
@@ -110,7 +106,7 @@ func (node *Node) validate(tx *Transaction) bool {
 	//check if transaction goes at end of list, then AllWallets can check validity
 	//if tx.Time.After(node.LastBlock.Transaction.Time) {
 	if true {
-		if (node.AllWallets[tx.From] < tx.Value) { //sender doesn't have enough money
+		if node.AllWallets[tx.From] < tx.Value { //sender doesn't have enough money
 			return false
 		} else { //transaction is valid!!!
 			//update AllWallets balance
@@ -137,4 +133,10 @@ func (node *Node) validate(tx *Transaction) bool {
 	}
 
 	return false
+}
+
+func (node *Node) DumpLogLines() {
+	for _, line := range node.LogLines {
+		fmt.Println(line)
+	}
 }
