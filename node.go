@@ -29,6 +29,8 @@ func (node *Node) StartListenForTx() {
 			additionalLogLines = prefixLinesWith(additionalLogLines, "        ", "            ")
 
 			node.LogLines = append(node.LogLines, additionalLogLines...)
+
+			TotalTxProcessed++
 		}
 	}()
 }
@@ -67,7 +69,7 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 			node.StartTime = time.Now()
 		}
 
-		if node.TxCount >= (NrOfTx - 1) {
+		if node.TxCount >= (NrOfTx) {
 			logLines = append(logLines, fmt.Sprintf("Node %s thinks balance of BobSt: %d, Chris: %d, GregM: %d, Muham: %d \n",
 				node.Wallet,
 				node.AllWallets["BobSt"],
@@ -78,6 +80,7 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 			TimeToComplete := time.Since(node.StartTime)
 
 			logLines = append(logLines, fmt.Sprintf("Delegate %s processed %d transactions in %d time", node.Wallet, 4, TimeToComplete))
+
 		}
 
 		// set the delegate id to current id and broadcast the valid transaction to other nodes

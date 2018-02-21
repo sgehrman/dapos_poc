@@ -10,6 +10,7 @@ import (
 )
 
 var NrOfTx = 1000
+var TotalTxProcessed = 0
 
 func main() {
 	fmt.Println("DAPoS Simulation!")
@@ -38,8 +39,8 @@ func main() {
 		sendRandomTransaction("dl   ", "GregM", 3, 1000, getNodeByAddress(names[2]))
 		sendRandomTransaction("dl   ", "Muham", 4, 1000, getNodeByAddress(names[3]))
 		//send random transactions
-		var nrOfTransactions = NrOfTx
-		for transactionID := 5; transactionID <= nrOfTransactions; transactionID++ {
+
+		for transactionID := 5; transactionID <= NrOfTx; transactionID++ {
 			//get random node1 for FROM, and random node2 for TO
 			var node1 = getRandomNode(nil)
 			var node2 = getRandomNode(node1)
@@ -52,7 +53,14 @@ func main() {
 	}()
 
 	go func() {
-		time.Sleep(time.Second * 50) // FIXME: find a way to wait for all processins to be finished
+		time.Sleep(time.Second * 120) // FIXME: find a way to wait for all processins to be finished
+
+		for {
+			if TotalTxProcessed > (NrOfTx * numOfDelegates) {
+				time.Sleep(time.Second * 10)
+				break
+			}
+		}
 
 		log_SeparatorLine()
 		for i := range getNodes() {
