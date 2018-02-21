@@ -40,103 +40,72 @@ func getDictKeysAsList() []string {
 	return keys
 }
 
-func getRandomNonDelegateNode(nodeToIgnore *Node) *Node {
+func getRandomNode(nodeToIgnore *Node) *Node {
 	nodes := getNodes()
 	nodesNames := getDictKeysAsList()
 
 	var theNode *Node
-	for {
-		randomNum := GetRandomNumber(len(nodes))
-		theNode = getNodes()[nodesNames[randomNum]]
-
-		if nodeToIgnore != nil && nodeToIgnore.Wallet.Id == theNode.Wallet.Id {
-			continue
-		}
-
-		if !theNode.IsDelegate {
-			break
-		}
-	}
+	randomNum := GetRandomNumber(len(nodes))
+	theNode = getNodes()[nodesNames[randomNum]]
 
 	return theNode
 }
 
-func sendRandomTransaction(fromWallet WalletAddress, toWallet WalletAddress, transactionId int, delegates []WalletAddress) {
-
-	fromNode := getNodes()[string(fromWallet)]
-	toNode := getNodes()[string(toWallet)]
-
-	amount := 1
+func sendRandomTransaction(fromWallet string, toWallet string, transactionId int, amount int, delegate *Node) {
 
 	transaction := Transaction{
 		transactionId,
-		fromNode.Wallet.Id,
-		toNode.Wallet.Id,
+		fromWallet,
+		toWallet,
 		amount,
 		time.Now(),
-		[]WalletAddress{},
-		fromNode.Wallet.Id,
 	}
 
-	for _, v := range delegates {
-		delegate := getNodes()[string(v)]
-		go func() {
-			log.Infof("sendRandomTx()  | Tx_%d(%s -> %s) | %s -> %s",
-				transaction.Id,
-				transaction.From,
-				transaction.To,
-				fromNode.Wallet.Id,
-				delegate.Wallet.Id,
-			)
-			delegate.TxChannel <- transaction
-		}()
-	}
+	go func() {
+		log.Infof("sendRandomTx()  | Tx_%d(%s -> %s) | send to delegate -> %s",
+			transaction.Id,
+			transaction.From,
+			transaction.To,
+			delegate.Wallet,
+		)
+		delegate.TxChannel <- transaction
+	}()
 }
 
 var nodes *map[string]*Node
 
 var once sync.Once
 
-var GenesisBlock = &Block{
-	Prev: nil,
-	Next: nil,
-	Transaction: Transaction{
-		0,
-		"dl",
-		"dl",
-		100,
-		time.Now(),
-		[]WalletAddress{},
-		"dl",
-	},
-}
+var startingBalance = 10000000
 
-func CreateNodeAndAddToList(newMember string, initialBalance int) {
-	wallet := WalletAccount{
-		WalletAddress(newMember),
-		newMember,
-		initialBalance,
+func CreateNodeAndAddToList(newMember string) {
+
+	GenesisBlock := Block{
+		Prev: nil,
+		Next: nil,
+		Transaction: &Transaction{
+			0,
+			"dl",
+			"dl",
+			startingBalance,
+			time.Now(),
+		},
 	}
 
 	node := Node{
-		GenesisBlock:    GenesisBlock,
-		LastBlock:       nil,
-		TxChannel:       make(chan Transaction),
-		VoteChannel:     make(chan Vote),
-		Wallet:          wallet,
-		IsDelegate:      false,
-		TxFromChainById: map[int]*Transaction{},
-		AllVotes:        make(map[int]*Votes),
+		GenesisBlock:    	GenesisBlock,
+		LastBlock:       	&GenesisBlock,
+		TxChannel:       	make(chan Transaction),
+		TxCount:			0,
+		Wallet:       		string(newMember),
+		IsDelegate: 		true,
+		TxFromChainById:	map[int]*Transaction{},
+		AllWallets:			map[string]int{},
 	}
-	node.LastBlock = node.GenesisBlock
 
+	node.AllWallets["dl"] = startingBalance
 	getNodes()[newMember] = &node
-}
-
-func ElectDelegate(newMember string) {
-	getNodes()[newMember].IsDelegate = true
-	getNodes()[newMember].StartListenForTx()
-	getNodes()[newMember].StartVoteCounting()
+	node.StartListenForTx()
 }
 
 func getNodes() map[string]*Node {
@@ -146,7 +115,7 @@ func getNodes() map[string]*Node {
 	return *nodes
 }
 
-func getNodeByAddress(address WalletAddress) *Node {
+func getNodeByAddress(address string) *Node {
 	var theNode = getNodes()[string(address)]
 	return theNode
 }

@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
+	//"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -22,56 +22,42 @@ func main() {
 	log.Info("DAPoS Simulation!")
 	logSeparator()
 
+	var numOfDelegates = 4
 	var names = []string{
 		"BobSt",
 		"Chris",
 		"GregM",
 		"Muham",
-		"Nicol",
-		"ZaneW",
-		"Avery",
 	}
 
 	// Create Nodes
 	for _, name := range names {
-		CreateNodeAndAddToList(name, 100)
-	}
-
-	// Elect Delegates
-	var nrOfDelegates = 3
-	for count := 0; count < nrOfDelegates; count++ {
-		var node = getRandomNonDelegateNode(nil)
-		ElectDelegate(string(node.Wallet.Id))
+		CreateNodeAndAddToList(name)
 	}
 
 	// Log Who is Who
 	for _, node := range getNodes() {
-		if node.IsDelegate {
-			log.Infof("Delegate - %s", node.Wallet.Id)
-		} else {
-			log.Infof("Node     - %s", node.Wallet.Id)
-		}
+		log.Infof("Delegate - %s", node.Wallet)
 	}
 
 	// Run Transactions
 	go func() {
 		logSeparator()
-		time.Sleep(time.Second * 5)
+		//Creates list of the delegates
+		delegateCounter := 0
 
-		var delegates = []WalletAddress{}
-		for _, node := range getNodes() {
-			if node.IsDelegate {
-				delegates = append(delegates, node.Wallet.Id)
+		sendRandomTransaction("dl", "BobSt", 1, 1000, getNodeByAddress(names[0]))
+		sendRandomTransaction("dl", "Chris", 2, 1000, getNodeByAddress(names[1]))
+		sendRandomTransaction("dl", "GregM", 3, 1000, getNodeByAddress(names[2]))
+		sendRandomTransaction("dl", "Muham", 4, 1000, getNodeByAddress(names[3]))
 
-				break
-			}
-		}
-
-		var nrOfTransactions = 1
+		var nrOfTransactions = 1000
 		for transactionID := 1; transactionID <= nrOfTransactions; transactionID++ {
-			var node1 = getRandomNonDelegateNode(nil)
-			var node2 = getRandomNonDelegateNode(node1)
-			sendRandomTransaction(node1.Wallet.Id, node2.Wallet.Id, transactionID, delegates)
+			var node1 = getRandomNode(nil)
+			var node2 = getRandomNode(node1)
+			toDelegatePointer := getNodeByAddress(names[delegateCounter%numOfDelegates])
+			sendRandomTransaction(node1.Wallet, node2.Wallet, transactionID, 1, toDelegatePointer)
+			delegateCounter++
 		}
 	}()
 
