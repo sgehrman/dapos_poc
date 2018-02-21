@@ -35,7 +35,7 @@ func main() {
 		sendRandomTransaction("dl   ", "GregM", 3, 1000, getNodeByAddress(names[2]))
 		sendRandomTransaction("dl   ", "Muham", 4, 1000, getNodeByAddress(names[3]))
 
-		var nrOfTransactions = 5
+		var nrOfTransactions = 1000
 		for transactionID := 1; transactionID <= nrOfTransactions; transactionID++ {
 			var node1 = getRandomNode(nil)
 			var node2 = getRandomNode(node1)
@@ -46,7 +46,7 @@ func main() {
 	}()
 
 	go func() {
-		time.Sleep(time.Second * 15) // FIXME: find a way to wait for all processins to be finished
+		time.Sleep(time.Second * 50) // FIXME: find a way to wait for all processins to be finished
 
 		for i := range getNodes() {
 			getNodes()[i].DumpLogLines()
