@@ -66,6 +66,7 @@ func sendRandomTransaction(fromWallet string, toWallet string, transactionId int
 		toWallet,
 		amount,
 		time.Now(),
+		fromWallet,
 	}
 
 	go func() {
@@ -96,6 +97,7 @@ func CreateNodeAndAddToList(newMember string) {
 			"dl   ",
 			startingBalance,
 			time.Now(),
+			"dl",
 		},
 	}
 

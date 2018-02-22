@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var NrOfTx = 1000
+var NrOfTx = 100
 var TotalTxProcessed = 0
 
 func main() {
@@ -57,7 +57,7 @@ func main() {
 
 		for {
 			if TotalTxProcessed > (NrOfTx * numOfDelegates) {
-				time.Sleep(time.Second * 10)
+				time.Sleep(time.Second * 5)
 				break
 			}
 		}

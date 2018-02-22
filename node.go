@@ -16,7 +16,7 @@ func (node *Node) StartListenForTx() {
 
 			var additionalLogLines = []string{}
 
-			node.LogLines = append(node.LogLines, fmt.Sprintf("    GotTX()-node    | Tx_%d(%s -> %s) | %s", tx.Id, tx.From, tx.To, node.Wallet))
+			node.LogLines = append(node.LogLines, fmt.Sprintf("    GotTX()-node    | Tx_%d(From:%s -> To:%s) | CurrentNode:%s | RecievedFrom:%s", tx.Id, tx.From, tx.To, node.Wallet,tx.DelId))
 
 			seen := node.checkIfValidated(tx.Id)
 
@@ -55,12 +55,14 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 	additionalLogLines = prefixLinesWith(additionalLogLines, "", "    ")
 	logLines = append(logLines, additionalLogLines...)
 
+
 	if valid {
 		logLines = append(logLines, fmt.Sprintf("Node ID: %s, Transaction ID: %d, Value: %d", node.Wallet, tx.Id, tx.Value))
 		logLines = append(logLines, fmt.Sprintf("delegate %s: received valid transaction %d with value: %d", node.Wallet, tx.Id, tx.Value))
 
 		//add valid transaction to 'validated' list
 		node.TxFromChainById[tx.Id] = tx
+
 
 		//report back if no more expected tx
 		//if tx was last expected (4) then report balances
@@ -86,13 +88,16 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 		// set the delegate id to current id and broadcast the valid transaction to other nodes
 		for k, _ := range getNodes() {
 			destinationNode := getNodes()[k]
-			if destinationNode.Wallet == node.Wallet{
+			if destinationNode.Wallet == node.Wallet || destinationNode.Wallet == tx.DelId{
 				continue
 			}
-			logLines = append(logLines, fmt.Sprintf("sendTx()        | Tx_%d(%s -> %s) | %s -> %s", tx.Id, tx.From, tx.To, node.Wallet, destinationNode.Wallet))
+
 			go func() {
+				tx.DelId = node.Wallet
 				destinationNode.TxChannel <- *tx
 			}()
+			//TODO: SendingFrom not correctly printing (tx.DelId should be = to node.Wallet, instead printing old value)
+			logLines = append(logLines, fmt.Sprintf("sendTx()        | Tx_%d(From:%s -> To:%s) | CurrentNode:%s |SendingFrom%s -> SendingTo:%s", tx.Id, tx.From, tx.To, node.Wallet,tx.DelId, destinationNode.Wallet))
 		}
 	} else {
 		logLines = append(logLines, fmt.Sprintf("Node ID: %s, Transaction: %d, From ID: %s, Value: %d", node.Wallet, tx.Id, tx.From, tx.Value))

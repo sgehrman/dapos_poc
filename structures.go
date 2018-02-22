@@ -16,6 +16,7 @@ type Transaction struct {
 	To    string
 	Value int
 	Time  time.Time
+	DelId string
 }
 
 type Node struct {
