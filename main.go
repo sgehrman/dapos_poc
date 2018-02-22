@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
-	"strings"
 )
 
-var NrOfTx = 100
+var NrOfTx = 1
 var TotalTxProcessed = 0
 
 func main() {
@@ -40,7 +40,9 @@ func main() {
 		sendRandomTransaction("dl   ", "Muham", 4, 1000, getNodeByAddress(names[3]))
 		//send random transactions
 
-		for transactionID := 5; transactionID <= NrOfTx; transactionID++ {
+		transactionID := 5
+		NrOfTx = transactionID + NrOfTx
+		for ; transactionID < NrOfTx; transactionID++ {
 			//get random node1 for FROM, and random node2 for TO
 			var node1 = getRandomNode(nil)
 			var node2 = getRandomNode(node1)
@@ -53,7 +55,7 @@ func main() {
 	}()
 
 	go func() {
-		time.Sleep(time.Second * 120) // FIXME: find a way to wait for all processins to be finished
+		//time.Sleep(time.Second * 120) // FIXME: find a way to wait for all processins to be finished
 
 		for {
 			if TotalTxProcessed > (NrOfTx * numOfDelegates) {
