@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	"time"
 )
 
@@ -137,16 +136,61 @@ func (node *Node) validate(tx *Transaction) bool {
 			return true
 		}
 	} else { //if tx is not at end of list, iterate backwards to find balances of time of tx
-		//TODO: support tx that come before lastBlock
+		//TODO: Test this
+		//store blocks to transverse through
+		currentBlock := node.LastBlock
+		//store balances to reach balance at time of transaction
 
-		//start with node.AllWallets and iterate backwards from node.LastBlock until
-		//the state of the chain at time of transaction is discovered
-		/*
-		Node GregM thinks balance of BobSt: 998, Chris: 1003, GregM: 1000, Muham: 999
-		Node Muham thinks balance of BobSt: 998, Chris: 1003, GregM: 1000, Muham: 999
-		Node BobSt thinks balance of BobSt: 998, Chris: 1003, GregM: 1000, Muham: 999
-		Node Chris thinks balance of BobSt: 998, Chris: 1003, GregM: 1000, Muham: 999
-		*/
+		heldBalance := make(map[string]int)
+		for k, v := range node.AllWallets {
+			heldBalance[k] = v
+		}
+
+		for {
+			//traverse backwards through transactions to find correct place of tx
+			heldBalance[currentBlock.Transaction.From] += currentBlock.Transaction.Value
+			heldBalance[currentBlock.Transaction.To] -= currentBlock.Transaction.Value
+			currentBlock = currentBlock.Prev
+			if tx.Time.After(currentBlock.Transaction.Time) || tx.Time.Equal(currentBlock.Transaction.Time){
+				//Found correct placement, get current values
+				heldBalance[currentBlock.Transaction.From] += currentBlock.Transaction.Value
+				heldBalance[currentBlock.Transaction.To] -= currentBlock.Transaction.Value
+				if heldBalance[tx.From] < tx.Value { //sender doesn't have enough money
+					//TODO: still need to progress through chain
+					return false
+				}
+				//Updating actual wallet
+				heldBalance[tx.From] -= tx.Value
+				heldBalance[tx.To] += tx.Value
+
+				//Make Block
+				newBlock := &Block{
+					currentBlock,
+					currentBlock.Next,
+					tx,
+				}
+
+				currentBlock.Next.Prev = newBlock
+				currentBlock.Next = newBlock
+				//Traverse forwards
+				for newBlock.Next != nil{
+					if heldBalance[newBlock.Next.Transaction.From] < newBlock.Next.Transaction.Value { //sender doesn't have enough money
+						//replace block and move on
+						newBlock.Next.Next.Prev = newBlock
+						newBlock.Next = newBlock.Next.Next
+						continue
+					}
+					//still Valid, add to temp wallet
+					heldBalance[newBlock.Next.Transaction.From] -= newBlock.Next.Transaction.Value
+					heldBalance[newBlock.Next.Transaction.To] += newBlock.Next.Transaction.Value
+				}
+				for k, v := range heldBalance {
+					node.AllWallets[k] = v
+				}
+
+				break
+			}
+		}
 
 	}
 
