@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var NrOfTx = 100
+var NrOfTx = 200
 var TotalTxProcessed = 0
 
 func main() {
@@ -53,10 +53,13 @@ func main() {
 	}()
 
 	go func() {
-		time.Sleep(time.Second * 120) // FIXME: find a way to wait for all processins to be finished
+	//	time.Sleep(time.Second * 120) // FIXME: find a way to wait for all processins to be finished
+		startTime := time.Now()
 
 		for {
 			if TotalTxProcessed > (NrOfTx * numOfDelegates) {
+				finalTime := time.Since(startTime)
+				fmt.Println("Final time:%d " ,finalTime)
 				time.Sleep(time.Second * 5)
 				break
 			}
@@ -79,6 +82,7 @@ func main() {
 			}
 
 			fmt.Println(strings.Join(allWaletValues, ", "))
+
 		}
 	}()
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 )
 
 func (node *Node) StartListenForTx() {
@@ -65,24 +64,24 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 
 		//report back if no more expected tx
 		//if tx was last expected (4) then report balances
-		node.TxCount++
-		if node.TxCount == 1 {
-			node.StartTime = time.Now()
-		}
-
-		if node.TxCount >= (NrOfTx) {
-			logLines = append(logLines, fmt.Sprintf("Node %s thinks balance of BobSt: %d, Chris: %d, GregM: %d, Muham: %d \n",
-				node.Wallet,
-				node.AllWallets["BobSt"],
-				node.AllWallets["Chris"],
-				node.AllWallets["GregM"],
-				node.AllWallets["Muham"]))
-
-			TimeToComplete := time.Since(node.StartTime)
-
-			logLines = append(logLines, fmt.Sprintf("Delegate %s processed %d transactions in %d time", node.Wallet, 4, TimeToComplete))
-
-		}
+		//node.TxCount++
+		//if node.TxCount == 1 {
+		//	node.StartTime = time.Now()
+		//}
+		//
+		//if node.TxCount >= (NrOfTx) {
+		//	logLines = append(logLines, fmt.Sprintf("Node %s thinks balance of BobSt: %d, Chris: %d, GregM: %d, Muham: %d \n",
+		//		node.Wallet,
+		//		node.AllWallets["BobSt"],
+		//		node.AllWallets["Chris"],
+		//		node.AllWallets["GregM"],
+		//		node.AllWallets["Muham"]))
+		//
+		//	TimeToComplete := time.Since(node.StartTime)
+		//
+		//	logLines = append(logLines, fmt.Sprintf("Delegate %s processed %d transactions in %d time", node.Wallet, 4, TimeToComplete))
+		//
+		//}
 
 		// set the delegate id to current id and broadcast the valid transaction to other nodes
 		for k, _ := range getNodes() {
@@ -109,14 +108,16 @@ func (node *Node) validateBlockAndTransmit(tx *Transaction) []string {
 //validates the transaction and adds it to the end of the chain
 func (node *Node) validate(tx *Transaction) bool {
 	//don't process a negative tx
+
+	node.LogLines = append(node.LogLines, fmt.Sprintf("Inside Validate,Node ID: %s, Transaction: %d, From ID: %s, Value: %d", node.Wallet, tx.Id, tx.From, tx.Value))
 	if tx.Value < 0 {
 		return false
 	}
 
 	//check if transaction goes at end of list, then AllWallets can check validity
 	//if tx.Time.After(node.LastBlock.Transaction.Time) {
-	if true {
-
+	if tx.Time.After(node.LastBlock.Transaction.Time) {
+		node.LogLines = append(node.LogLines, fmt.Sprintf("New block at end of chain"))
 		if node.AllWallets[tx.From] < tx.Value { //sender doesn't have enough money
 			return false
 		} else { //transaction is valid!!!
@@ -136,7 +137,8 @@ func (node *Node) validate(tx *Transaction) bool {
 			return true
 		}
 	} else { //if tx is not at end of list, iterate backwards to find balances of time of tx
-		//TODO: Test this
+
+		node.LogLines = append(node.LogLines, fmt.Sprintf("New block at middle of chain"))
 		//store blocks to transverse through
 		currentBlock := node.LastBlock
 		//store balances to reach balance at time of transaction
@@ -148,15 +150,13 @@ func (node *Node) validate(tx *Transaction) bool {
 
 		for {
 			//traverse backwards through transactions to find correct place of tx
-			heldBalance[currentBlock.Transaction.From] += currentBlock.Transaction.Value
-			heldBalance[currentBlock.Transaction.To] -= currentBlock.Transaction.Value
-			currentBlock = currentBlock.Prev
+			//heldBalance[currentBlock.Transaction.From] += currentBlock.Transaction.Value
+			//heldBalance[currentBlock.Transaction.To] -= currentBlock.Transaction.Value
+
+			//if new tx goes after currentblock, then inser into list and check following blocks for validity
 			if tx.Time.After(currentBlock.Transaction.Time) || tx.Time.Equal(currentBlock.Transaction.Time){
-				//Found correct placement, get current values
-				heldBalance[currentBlock.Transaction.From] += currentBlock.Transaction.Value
-				heldBalance[currentBlock.Transaction.To] -= currentBlock.Transaction.Value
 				if heldBalance[tx.From] < tx.Value { //sender doesn't have enough money
-					//TODO: still need to progress through chain
+
 					return false
 				}
 				//Updating actual wallet
@@ -172,24 +172,36 @@ func (node *Node) validate(tx *Transaction) bool {
 
 				currentBlock.Next.Prev = newBlock
 				currentBlock.Next = newBlock
+				currentBlock = newBlock
+
 				//Traverse forwards
-				for newBlock.Next != nil{
-					if heldBalance[newBlock.Next.Transaction.From] < newBlock.Next.Transaction.Value { //sender doesn't have enough money
+				for currentBlock.Next != nil{
+					if heldBalance[currentBlock.Next.Transaction.From] < currentBlock.Next.Transaction.Value { //sender doesn't have enough money
 						//replace block and move on
-						newBlock.Next.Next.Prev = newBlock
-						newBlock.Next = newBlock.Next.Next
+						currentBlock.Next.Next.Prev = currentBlock
+						currentBlock.Next = currentBlock.Next.Next
 						continue
 					}
 					//still Valid, add to temp wallet
-					heldBalance[newBlock.Next.Transaction.From] -= newBlock.Next.Transaction.Value
-					heldBalance[newBlock.Next.Transaction.To] += newBlock.Next.Transaction.Value
+					heldBalance[currentBlock.Next.Transaction.From] -= currentBlock.Next.Transaction.Value
+					heldBalance[currentBlock.Next.Transaction.To] += currentBlock.Next.Transaction.Value
+					currentBlock = currentBlock.Next
 				}
 				for k, v := range heldBalance {
 					node.AllWallets[k] = v
 				}
 
-				break
+				return true
+			} else { //if new tx does not go after currentBlock, move currentblock pointer back and check again
+
+				//Found correct placement, get current values
+				heldBalance[currentBlock.Transaction.From] += currentBlock.Transaction.Value
+				heldBalance[currentBlock.Transaction.To] -= currentBlock.Transaction.Value
+
+				currentBlock = currentBlock.Prev
+
 			}
+
 		}
 
 	}

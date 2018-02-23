@@ -25,7 +25,6 @@ type Node struct {
 	TxChannel    chan Transaction
 	Wallet       string
 	TxCount      int
-	StartTime    time.Time
 
 	IsDelegate      bool
 	TxFromChainById map[int]*Transaction
