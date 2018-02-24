@@ -116,7 +116,7 @@ func (node *Node) validate(tx *Transaction) bool {
 
 	//check if transaction goes at end of list, then AllWallets can check validity
 	//if tx.Time.After(node.LastBlock.Transaction.Time) {
-	if tx.Time.After(node.LastBlock.Transaction.Time) {
+	if true{
 		node.LogLines = append(node.LogLines, fmt.Sprintf("New block at end of chain"))
 		if node.AllWallets[tx.From] < tx.Value { //sender doesn't have enough money
 			return false
@@ -154,9 +154,8 @@ func (node *Node) validate(tx *Transaction) bool {
 			//heldBalance[currentBlock.Transaction.To] -= currentBlock.Transaction.Value
 
 			//if new tx goes after currentblock, then inser into list and check following blocks for validity
-			if tx.Time.After(currentBlock.Transaction.Time) || tx.Time.Equal(currentBlock.Transaction.Time){
+			if tx.Time.After(currentBlock.Transaction.Time) || tx.Time.Equal(currentBlock.Transaction.Time) {
 				if heldBalance[tx.From] < tx.Value { //sender doesn't have enough money
-
 					return false
 				}
 				//Updating actual wallet
@@ -169,23 +168,27 @@ func (node *Node) validate(tx *Transaction) bool {
 					currentBlock.Next,
 					tx,
 				}
-
-				currentBlock.Next.Prev = newBlock
+				if currentBlock.Next != nil {
+					currentBlock.Next.Prev = newBlock
+				}
 				currentBlock.Next = newBlock
 				currentBlock = newBlock
 
 				//Traverse forwards
-				for currentBlock.Next != nil{
+				for currentBlock.Next != nil {
 					if heldBalance[currentBlock.Next.Transaction.From] < currentBlock.Next.Transaction.Value { //sender doesn't have enough money
 						//replace block and move on
-						currentBlock.Next.Next.Prev = currentBlock
-						currentBlock.Next = currentBlock.Next.Next
-						continue
+						if currentBlock.Next.Next != nil {
+							currentBlock.Next.Next.Prev = currentBlock
+							currentBlock.Next = currentBlock.Next.Next
+						}
+
+					} else {
+						//still Valid, add to temp wallet
+						heldBalance[currentBlock.Next.Transaction.From] -= currentBlock.Next.Transaction.Value
+						heldBalance[currentBlock.Next.Transaction.To] += currentBlock.Next.Transaction.Value
+						currentBlock = currentBlock.Next
 					}
-					//still Valid, add to temp wallet
-					heldBalance[currentBlock.Next.Transaction.From] -= currentBlock.Next.Transaction.Value
-					heldBalance[currentBlock.Next.Transaction.To] += currentBlock.Next.Transaction.Value
-					currentBlock = currentBlock.Next
 				}
 				for k, v := range heldBalance {
 					node.AllWallets[k] = v
@@ -199,12 +202,15 @@ func (node *Node) validate(tx *Transaction) bool {
 				heldBalance[currentBlock.Transaction.To] -= currentBlock.Transaction.Value
 
 				currentBlock = currentBlock.Prev
-
+				if currentBlock.Prev == nil {
+					fmt.Println("No Prev Block found! breaking!")
+					return false
+				}
 			}
-
+		}
 		}
 
-	}
+
 
 	return false
 }
