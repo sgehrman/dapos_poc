@@ -9,8 +9,10 @@ import (
 	"time"
 )
 
-
-var NrOfTx = 6
+var oneT = 1000
+var oneM = 1000 * oneT
+var oneB = 1000 * oneM
+var NrOfTx = 50 * oneT
 
 var TotalTxProcessed = 0
 
@@ -35,6 +37,7 @@ func main() {
 	go func() {
 		//Creates list of the delegates
 		delegateCounter := 0
+
 		//send initial amount to each delegate
 		sendRandomTransaction("dl   ", "BobSt", 1, 1000, getNodeByAddress(names[0]))
 		sendRandomTransaction("dl   ", "Chris", 2, 1000, getNodeByAddress(names[1]))
@@ -43,7 +46,20 @@ func main() {
 		//send random transactions
 
 		transactionID := 5
+		/*
+			var genesisWallet = "dl   "
+			var chrisWallet = names[1]
 
+			var bobNode = getNodeByAddress(names[0])
+
+			var nowTime = time.Now()
+			var time1 = time.Unix(nowTime.Unix()+10, 0)
+			var time2 = time.Unix(nowTime.Unix()+5, 0)
+
+			sendRandomTransactionWithTime(genesisWallet, chrisWallet, transactionID, 1, bobNode, time1)
+			transactionID++
+			sendRandomTransactionWithTime(genesisWallet, chrisWallet, transactionID, 1, bobNode, time2)
+		*/
 		for ; transactionID <= NrOfTx; transactionID++ {
 			//get random node1 for FROM, and random node2 for TO
 			var node1 = getRandomNode(nil)
@@ -61,7 +77,7 @@ func main() {
 		for {
 			if TotalTxProcessed >= (NrOfTx)-1 {
 				finalTime := time.Since(startTime)
-				fmt.Println("Final time:%d " ,finalTime)
+				fmt.Println(fmt.Sprintf("FINAL: %d nanosecond", finalTime))
 				time.Sleep(time.Second * 5)
 				break
 			}

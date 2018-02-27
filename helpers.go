@@ -52,32 +52,35 @@ func getRandomNode(nodeToIgnore *Node) *Node {
 			return newNode
 		}
 
-		if newNode.Wallet != theNode.Wallet{
+		if newNode.Wallet != theNode.Wallet {
 			return newNode
-			}
 		}
+	}
 }
 
 func sendRandomTransaction(fromWallet string, toWallet string, transactionId int, amount int, delegate *Node) {
+	sendRandomTransactionWithTime(fromWallet, toWallet, transactionId, amount, delegate, time.Now())
+}
 
+func sendRandomTransactionWithTime(fromWallet string, toWallet string, transactionId int, amount int, delegate *Node, txTime time.Time) {
 	transaction := Transaction{
 		transactionId,
 		fromWallet,
 		toWallet,
 		amount,
-		time.Now(),
+		txTime,
 		fromWallet,
 	}
 
-	go func() {
-		fmt.Println(fmt.Sprintf("sendRandomTx()  | Tx_%d(%s -> %s) | send to delegate -> %s",
-			transaction.Id,
-			transaction.From,
-			transaction.To,
-			delegate.Wallet,
-		))
-		delegate.TxChannel <- transaction
-	}()
+	// go func() {
+	fmt.Println(fmt.Sprintf("sendRandomTx()  | Tx_%d(%s -> %s) | send to delegate -> %s",
+		transaction.Id,
+		transaction.From,
+		transaction.To,
+		delegate.Wallet,
+	))
+	delegate.TxChannel <- transaction
+	// }()
 }
 
 var nodes *map[string]*Node
