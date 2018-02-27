@@ -10,7 +10,7 @@ import (
 )
 
 
-var NrOfTx = 1000
+var NrOfTx = 6
 
 var TotalTxProcessed = 0
 
@@ -44,7 +44,7 @@ func main() {
 
 		transactionID := 5
 
-		for ; transactionID < NrOfTx; transactionID++ {
+		for ; transactionID <= NrOfTx; transactionID++ {
 			//get random node1 for FROM, and random node2 for TO
 			var node1 = getRandomNode(nil)
 			var node2 = getRandomNode(node1)
@@ -59,10 +59,10 @@ func main() {
 	go func() {
 		startTime := time.Now()
 		for {
-			if TotalTxProcessed >= (NrOfTx * numOfDelegates) {
+			if TotalTxProcessed >= (NrOfTx)-1 {
 				finalTime := time.Since(startTime)
 				fmt.Println("Final time:%d " ,finalTime)
-				time.Sleep(time.Second * 30)
+				time.Sleep(time.Second * 5)
 				break
 			}
 		}

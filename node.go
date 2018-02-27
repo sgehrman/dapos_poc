@@ -116,29 +116,29 @@ func (node *Node) validate(tx *Transaction) bool {
 
 	//check if transaction goes at end of list, then AllWallets can check validity
 	//if tx.Time.After(node.LastBlock.Transaction.Time) {
-	if true{
-		node.LogLines = append(node.LogLines, fmt.Sprintf("New block at end of chain"))
-		if node.AllWallets[tx.From] < tx.Value { //sender doesn't have enough money
-			return false
-		} else { //transaction is valid!!!
-			//update AllWallets balance
-			node.AllWallets[tx.From] -= tx.Value
-			node.AllWallets[tx.To] += tx.Value
+	//if true{
+	//	node.LogLines = append(node.LogLines, fmt.Sprintf("New block at end of chain"))
+	//	if node.AllWallets[tx.From] < tx.Value { //sender doesn't have enough money
+	//		return false
+	//	} else { //transaction is valid!!!
+	//		//update AllWallets balance
+	//		node.AllWallets[tx.From] -= tx.Value
+	//		node.AllWallets[tx.To] += tx.Value
+	//
+	//		//add tx to end of list
+	//		node.LastBlock.Next = &Block{
+	//			node.LastBlock,
+	//			nil,
+	//			tx,
+	//		}
+	//		node.LastBlock = node.LastBlock.Next
+	//
+	//		//return true then add to TxFromChainById & broadcast to delegates
+	//		return true
+	//	}
+	//} else { //if tx is not at end of list, iterate backwards to find balances of time of tx
 
-			//add tx to end of list
-			node.LastBlock.Next = &Block{
-				node.LastBlock,
-				nil,
-				tx,
-			}
-			node.LastBlock = node.LastBlock.Next
-
-			//return true then add to TxFromChainById & broadcast to delegates
-			return true
-		}
-	} else { //if tx is not at end of list, iterate backwards to find balances of time of tx
-
-		node.LogLines = append(node.LogLines, fmt.Sprintf("New block at middle of chain"))
+		node.LogLines = append(node.LogLines, fmt.Sprintf("finding block placement"))
 		//store blocks to transverse through
 		currentBlock := node.LastBlock
 		//store balances to reach balance at time of transaction
@@ -150,15 +150,15 @@ func (node *Node) validate(tx *Transaction) bool {
 
 		for {
 			//traverse backwards through transactions to find correct place of tx
-			//heldBalance[currentBlock.Transaction.From] += currentBlock.Transaction.Value
-			//heldBalance[currentBlock.Transaction.To] -= currentBlock.Transaction.Value
+
 
 			//if new tx goes after currentblock, then inser into list and check following blocks for validity
 			if tx.Time.After(currentBlock.Transaction.Time) || tx.Time.Equal(currentBlock.Transaction.Time) {
 				if heldBalance[tx.From] < tx.Value { //sender doesn't have enough money
+					fmt.Println("Invalid Transaction")
 					return false
 				}
-				//Updating actual wallet
+				//Updating temp wallet
 				heldBalance[tx.From] -= tx.Value
 				heldBalance[tx.To] += tx.Value
 
@@ -168,20 +168,33 @@ func (node *Node) validate(tx *Transaction) bool {
 					currentBlock.Next,
 					tx,
 				}
+
+				//set pointers to add newest block
 				if currentBlock.Next != nil {
 					currentBlock.Next.Prev = newBlock
-				}
+					currentBlock.Next = newBlock
+					currentBlock = newBlock
+				} else{
 				currentBlock.Next = newBlock
 				currentBlock = newBlock
+				node.LastBlock = newBlock
+				}
 
 				//Traverse forwards
 				for currentBlock.Next != nil {
+					fmt.Println("Iterating forwards")
 					if heldBalance[currentBlock.Next.Transaction.From] < currentBlock.Next.Transaction.Value { //sender doesn't have enough money
 						//replace block and move on
 						if currentBlock.Next.Next != nil {
+							fmt.Println("Replacing next block ")
 							currentBlock.Next.Next.Prev = currentBlock
 							currentBlock.Next = currentBlock.Next.Next
+						}else{
+							fmt.Println("Dropping next block ")
+							currentBlock.Next = nil
+							return true
 						}
+						currentBlock = currentBlock.Next
 
 					} else {
 						//still Valid, add to temp wallet
@@ -190,13 +203,14 @@ func (node *Node) validate(tx *Transaction) bool {
 						currentBlock = currentBlock.Next
 					}
 				}
+				fmt.Println("outside forwards")
 				for k, v := range heldBalance {
 					node.AllWallets[k] = v
 				}
 
 				return true
 			} else { //if new tx does not go after currentBlock, move currentblock pointer back and check again
-
+				fmt.Println("Iterating backwards")
 				//Found correct placement, get current values
 				heldBalance[currentBlock.Transaction.From] += currentBlock.Transaction.Value
 				heldBalance[currentBlock.Transaction.To] -= currentBlock.Transaction.Value
@@ -208,11 +222,7 @@ func (node *Node) validate(tx *Transaction) bool {
 				}
 			}
 		}
-		}
 
-
-
-	return false
 }
 
 func (node *Node) DumpLogLines() {
