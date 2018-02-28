@@ -3,27 +3,12 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"sync"
 	"time"
+
+	logger "github.com/nic0lae/golog"
 )
-
-func log_SeparatorLine() {
-	fmt.Println("~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~")
-}
-
-func prefixLinesWith(lines []string, prefixFirstLine string, prefixAllLines string) []string {
-	var prefixedLines = []string{}
-
-	for index, line := range lines {
-		if index == 0 {
-			prefixedLines = append(prefixedLines, prefixFirstLine+line)
-		} else {
-			prefixedLines = append(prefixedLines, prefixAllLines+line)
-		}
-	}
-
-	return prefixedLines
-}
 
 func GetRandomNumber(boundary int) int {
 	s1 := rand.NewSource(time.Now().UnixNano())
@@ -40,19 +25,26 @@ func getDictKeysAsList() []string {
 	return keys
 }
 
-func getRandomNode(nodeToIgnore *Node) *Node {
+func getRandomNode(nodesToIgnore []*Node) *Node {
 	nodes := getNodes()
 	nodesNames := getDictKeysAsList()
 
-	var theNode *Node = nodeToIgnore
 	for {
 		randomNum := GetRandomNumber(len(nodes))
 		newNode := getNodes()[nodesNames[randomNum]]
-		if theNode == nil {
+		if len(nodesToIgnore) == 0 {
 			return newNode
 		}
 
-		if newNode.Wallet != theNode.Wallet {
+		var nodeInArray = false
+		for _, n := range nodesToIgnore {
+			if newNode.Wallet == n.Wallet {
+				nodeInArray = true
+				break
+			}
+		}
+
+		if !nodeInArray {
 			return newNode
 		}
 	}
@@ -72,15 +64,18 @@ func sendRandomTransactionWithTime(fromWallet string, toWallet string, transacti
 		fromWallet,
 	}
 
-	// go func() {
-	fmt.Println(fmt.Sprintf("sendRandomTx()  | Tx_%d(%s -> %s) | send to delegate -> %s",
-		transaction.Id,
-		transaction.From,
-		transaction.To,
-		delegate.Wallet,
-	))
-	delegate.TxChannel <- transaction
-	// }()
+	go func() {
+		logger.Instance().LogInfo(
+			GlobalLogTag, 0,
+			fmt.Sprintf("sendRandomTx() | Tx_%"+strconv.Itoa(len(strconv.Itoa(NrOfTx)))+"d(%5s -> %5s) | send to delegate -> %s",
+				transaction.Id,
+				transaction.From,
+				transaction.To,
+				delegate.Wallet,
+			))
+		delegate.TxChannel <- transaction
+		// delegate.WriteToQ(transaction)
+	}()
 }
 
 var nodes *map[string]*Node
@@ -94,10 +89,10 @@ func CreateNodeAndAddToList(newMember string) {
 	GenesisBlock := Block{
 		Prev: nil,
 		Next: nil,
-		Transaction: &Transaction{
+		Transaction: Transaction{
 			0,
-			"dl   ",
-			"dl   ",
+			"dl",
+			"dl",
 			startingBalance,
 			time.Now(),
 			"dl",
@@ -107,15 +102,21 @@ func CreateNodeAndAddToList(newMember string) {
 	node := Node{
 		GenesisBlock:    GenesisBlock,
 		LastBlock:       &GenesisBlock,
-		TxChannel:       make(chan Transaction),
-		TxCount:         0,
 		Wallet:          string(newMember),
 		IsDelegate:      true,
-		TxFromChainById: map[int]*Transaction{},
+		TxFromChainById: map[int]Transaction{},
 		AllWallets:      map[string]int{},
+
+		TxChannel: make(chan Transaction), // channels.NewInfiniteChannel(), // Utils.Infinity) //
+		// txQueue:   []Transaction{},
+		// rwMutex:   sync.RWMutex{},
+
+		TxCount:               0,
+		TimeForLastTx:         time.Now(),
+		TotaProcessTimeInNano: 0,
 	}
 
-	node.AllWallets["dl   "] = startingBalance
+	node.AllWallets["dl"] = startingBalance
 	getNodes()[newMember] = &node
 	//since all nodes are delegates we initialize a node with listening to transactions
 	node.StartListenForTx()

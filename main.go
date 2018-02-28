@@ -7,20 +7,44 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	logger "github.com/nic0lae/golog"
+	gologC "github.com/nic0lae/golog/contracts"
+	gologM "github.com/nic0lae/golog/modifiers"
+	gologP "github.com/nic0lae/golog/persisters"
 )
 
 var oneT = 1000
 var oneM = 1000 * oneT
 var oneB = 1000 * oneM
-var NrOfTx = 50 * oneT
+var NrOfTx = oneT * 30
 
-var TotalTxProcessed = 0
+var TotalTxProcessed int64 = 0
+
+var GlobalLogTag = "DAPoS"
 
 func main() {
-	fmt.Println("DAPoS Simulation!")
-	log_SeparatorLine()
+	// Setup logging
+	var inmemoryLogger = gologM.NewInmemoryLogger(
+		gologM.NewSimpleFormatterLogger(
+			gologM.NewMultiLogger(
+				[]gologC.Logger{
+					// gologP.NewConsoleLogger(),
+					gologP.NewFileLogger("dapos_poc.log"),
+				},
+			),
+		),
+	)
 
-	var numOfDelegates = 4
+	logger.StoreSingleton(
+		logger.NewLogger(
+			inmemoryLogger,
+		),
+	)
+
+	logger.Instance().LogInfo(GlobalLogTag, 0, "DAPoS Simulation!")
+	logger.Instance().LogInfo(GlobalLogTag, 0, "~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~")
+
 	var names = []string{
 		"BobSt",
 		"Chris",
@@ -35,73 +59,99 @@ func main() {
 
 	// Run Transactions
 	go func() {
-		//Creates list of the delegates
-		delegateCounter := 0
 
-		//send initial amount to each delegate
-		sendRandomTransaction("dl   ", "BobSt", 1, 1000, getNodeByAddress(names[0]))
-		sendRandomTransaction("dl   ", "Chris", 2, 1000, getNodeByAddress(names[1]))
-		sendRandomTransaction("dl   ", "GregM", 3, 1000, getNodeByAddress(names[2]))
-		sendRandomTransaction("dl   ", "Muham", 4, 1000, getNodeByAddress(names[3]))
-		//send random transactions
+		// Init eveyrone with some money
+		sendRandomTransaction("dl", "BobSt", 1, 1000, getNodeByAddress(names[0]))
+		sendRandomTransaction("dl", "Chris", 2, 1000, getNodeByAddress(names[1]))
+		sendRandomTransaction("dl", "GregM", 3, 1000, getNodeByAddress(names[2]))
+		sendRandomTransaction("dl", "Muham", 4, 1000, getNodeByAddress(names[3]))
+
+		time.Sleep(time.Second * 5)
+
+		/* Used to isolate and debug buggy TX
+		var genesisWallet = "dl"
+		var chrisWallet = names[1]
+
+		var bobNode = getNodeByAddress(names[0])
+
+		var nowTime = time.Now()
+		var time1 = time.Unix(nowTime.Unix()+10, 0)
+		var time2 = time.Unix(nowTime.Unix()+5, 0)
+
+		sendRandomTransactionWithTime(genesisWallet, chrisWallet, transactionID, 1, bobNode, time1)
+		transactionID++
+		sendRandomTransactionWithTime(genesisWallet, chrisWallet, transactionID, 1, bobNode, time2)
+		*/
 
 		transactionID := 5
-		/*
-			var genesisWallet = "dl   "
-			var chrisWallet = names[1]
-
-			var bobNode = getNodeByAddress(names[0])
-
-			var nowTime = time.Now()
-			var time1 = time.Unix(nowTime.Unix()+10, 0)
-			var time2 = time.Unix(nowTime.Unix()+5, 0)
-
-			sendRandomTransactionWithTime(genesisWallet, chrisWallet, transactionID, 1, bobNode, time1)
-			transactionID++
-			sendRandomTransactionWithTime(genesisWallet, chrisWallet, transactionID, 1, bobNode, time2)
-		*/
 		for ; transactionID <= NrOfTx; transactionID++ {
-			//get random node1 for FROM, and random node2 for TO
 			var node1 = getRandomNode(nil)
-			var node2 = getRandomNode(node1)
-			//send to a delegate
-			toDelegatePointer := getNodeByAddress(names[delegateCounter%numOfDelegates])
-			//Send Transaction
-			sendRandomTransaction(node1.Wallet, node2.Wallet, transactionID, 1, toDelegatePointer)
-			delegateCounter++
+			var node2 = getRandomNode([]*Node{node1})
+			var delegateNode = getRandomNode([]*Node{node1, node2})
+
+			sendRandomTransaction(node1.Wallet, node2.Wallet, transactionID, 1, delegateNode)
 		}
 	}()
 
 	go func() {
-		startTime := time.Now()
+		logger.Instance().LogInfo(GlobalLogTag, 0, "~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~")
+
+		// time.Sleep(time.Second * 10)
+
 		for {
-			if TotalTxProcessed >= (NrOfTx)-1 {
-				finalTime := time.Since(startTime)
-				fmt.Println(fmt.Sprintf("FINAL: %d nanosecond", finalTime))
-				time.Sleep(time.Second * 5)
+			var allDone = true
+			for key := range getNodes() {
+				var node = getNodes()[key]
+				var isDone = node.IsDoneProcessing()
+				allDone = allDone && isDone
+			}
+
+			if allDone {
 				break
 			}
+
+			time.Sleep(time.Second)
 		}
 
-		log_SeparatorLine()
-		for i := range getNodes() {
-			getNodes()[i].DumpLogLines()
-		}
+		var totalProcessTimeInNano int64
+		for key := range getNodes() {
+			var node = getNodes()[key]
 
-		log_SeparatorLine()
-		for i := range getNodes() {
-			var node = getNodes()[i]
 			var allWaletValues = []string{}
 			for wallet, _ := range node.AllWallets {
-				if wallet == "dl   " {
+				if wallet == "dl" {
 					continue
 				}
-				allWaletValues = append(allWaletValues, fmt.Sprintf("%s - %d", wallet, node.AllWallets[wallet]))
+				allWaletValues = append(allWaletValues, fmt.Sprintf("%s - %6d", wallet, node.AllWallets[wallet]))
 			}
 
-			fmt.Println(strings.Join(allWaletValues, ", "))
+			var delta = time.Since(node.TimeForLastTx)
 
+			logger.Instance().LogInfo(GlobalLogTag, 0,
+				fmt.Sprintf(
+					"AllWallets: %s | TxCount: %d | IddleFor: [%d nano] [%d mili] [%f sec] [%f min] | TotaProcessTimeInNano: %d",
+					strings.Join(allWaletValues, ", "),
+					node.TxCount,
+					delta.Nanoseconds(),
+					delta.Nanoseconds()/1000000, // mili
+					delta.Seconds(),
+					delta.Minutes(),
+					node.TotaProcessTimeInNano,
+				),
+			)
+
+			totalProcessTimeInNano += node.TotaProcessTimeInNano
 		}
+
+		// var totalPRocessTimeInSec = totalProcessTimeInNano / 1000000000
+
+		logger.Instance().LogInfo(GlobalLogTag, 0, fmt.Sprintf("TotalTxProcessed: %d", TotalTxProcessed))
+		logger.Instance().LogInfo(GlobalLogTag, 0, fmt.Sprintf("Performance: %d Tx in %d Nano", TotalTxProcessed, totalProcessTimeInNano))
+		logger.Instance().LogInfo(GlobalLogTag, 0, "~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~")
+
+		(inmemoryLogger.(*gologM.InmemoryLogger)).Flush()
+
+		fmt.Println("DONE!!!")
 	}()
 
 	// Wait for Ctrl + C
