@@ -12,7 +12,7 @@ import (
 var oneT = 1000
 var oneM = 1000 * oneT
 var oneB = 1000 * oneM
-var NrOfTx = 50 * oneT
+var NrOfTx = 10 * oneT
 
 var TotalTxProcessed = 0
 
@@ -84,9 +84,9 @@ func main() {
 		}
 
 		log_SeparatorLine()
-		for i := range getNodes() {
-			getNodes()[i].DumpLogLines()
-		}
+		//for i := range getNodes() {
+		//	//getNodes()[i].DumpLogLines()
+		//}
 
 		log_SeparatorLine()
 		for i := range getNodes() {

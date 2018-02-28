@@ -73,12 +73,12 @@ func sendRandomTransactionWithTime(fromWallet string, toWallet string, transacti
 	}
 
 	// go func() {
-	fmt.Println(fmt.Sprintf("sendRandomTx()  | Tx_%d(%s -> %s) | send to delegate -> %s",
-		transaction.Id,
-		transaction.From,
-		transaction.To,
-		delegate.Wallet,
-	))
+	//fmt.Println(fmt.Sprintf("sendRandomTx()  | Tx_%d(%s -> %s) | send to delegate -> %s",
+	//	transaction.Id,
+	//	transaction.From,
+	//	transaction.To,
+	//	delegate.Wallet,
+	//))
 	delegate.TxChannel <- transaction
 	// }()
 }
