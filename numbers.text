@@ -1,0 +1,172 @@
+
+
+~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~
+Sleep 10 sec
+~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~
+
+100
+2018-02-28T06:33:19.481398797Z INFO      DAPoS  AllWallets: Chris -    998, Muham -   1012, GregM -    986, BobSt -   1004, TxCount: 241, IddleFor: 9969339601 nano / 9969339 mili / 9.969340 sec / 0.166156 min | TotaProcessTimeInNano: 9042848
+2018-02-28T06:33:19.481405362Z INFO      DAPoS  AllWallets: GregM -    986, BobSt -   1004, Chris -    998, Muham -   1012, TxCount: 228, IddleFor: 9969361177 nano / 9969361 mili / 9.969361 sec / 0.166156 min | TotaProcessTimeInNano: 8494310
+2018-02-28T06:33:19.481410831Z INFO      DAPoS  AllWallets: GregM -    986, BobSt -   1004, Chris -    998, Muham -   1012, TxCount: 228, IddleFor: 9969361583 nano / 9969361 mili / 9.969362 sec / 0.166156 min | TotaProcessTimeInNano: 8767176
+2018-02-28T06:33:19.481415937Z INFO      DAPoS  AllWallets: Chris -    998, GregM -    986, BobSt -   1004, Muham -   1012, TxCount: 229, IddleFor: 9969371615 nano / 9969371 mili / 9.969372 sec / 0.166156 min | TotaProcessTimeInNano: 8447534
+2018-02-28T06:33:19.481416716Z INFO      DAPoS  TotalTxProcessed: 926
+
+
+200 
+2018-02-28T06:33:51.755305842Z INFO      DAPoS  AllWallets: BobSt -    994, Muham -    999, Chris -   1001, GregM -   1006, TxCount: 420, IddleFor: 9984352950 nano / 9984352 mili / 9.984353 sec / 0.166406 min | TotaProcessTimeInNano: 4596347
+2018-02-28T06:33:51.755348793Z INFO      DAPoS  AllWallets: BobSt -    994, Muham -    999, Chris -   1001, GregM -   1006, TxCount: 390, IddleFor: 9984480386 nano / 9984480 mili / 9.984480 sec / 0.166408 min | TotaProcessTimeInNano: 4255943
+2018-02-28T06:33:51.755386320Z INFO      DAPoS  AllWallets: GregM -   1006, BobSt -    994, Muham -    999, Chris -   1001, TxCount: 385, IddleFor: 9984516000 nano / 9984516 mili / 9.984516 sec / 0.166409 min | TotaProcessTimeInNano: 4461720
+2018-02-28T06:33:51.755422041Z INFO      DAPoS  AllWallets: Muham -    999, BobSt -    994, Chris -   1001, GregM -   1006, TxCount: 376, IddleFor: 9984555831 nano / 9984555 mili / 9.984556 sec / 0.166409 min | TotaProcessTimeInNano: 4023644
+2018-02-28T06:33:51.755427491Z INFO      DAPoS  TotalTxProcessed: 1571
+
+
+300
+2018-02-28T06:34:42.656467757Z INFO      DAPoS  AllWallets: BobSt -    994, GregM -   1024, Chris -    997, Muham -    985, TxCount: 702, IddleFor: 9965518509 nano / 9965518 mili / 9.965519 sec / 0.166092 min | TotaProcessTimeInNano: 9847017
+2018-02-28T06:34:42.656499603Z INFO      DAPoS  AllWallets: Chris -    997, GregM -   1024, Muham -    985, BobSt -    994, TxCount: 701, IddleFor: 9965610224 nano / 9965610 mili / 9.965610 sec / 0.166094 min | TotaProcessTimeInNano: 10937921
+2018-02-28T06:34:42.656525295Z INFO      DAPoS  AllWallets: Muham -    985, BobSt -    994, GregM -   1024, Chris -    997, TxCount: 693, IddleFor: 9965643562 nano / 9965643 mili / 9.965644 sec / 0.166094 min | TotaProcessTimeInNano: 9757270
+2018-02-28T06:34:42.656549387Z INFO      DAPoS  AllWallets: BobSt -    994, GregM -   1024, Chris -    997, Muham -    985, TxCount: 653, IddleFor: 9965679823 nano / 9965679 mili / 9.965680 sec / 0.166095 min | TotaProcessTimeInNano: 10452219
+2018-02-28T06:34:42.656552928Z INFO      DAPoS  TotalTxProcessed: 2749
+
+
+400
+2018-02-28T06:39:16.351363368Z INFO      DAPoS  AllWallets: Chris -   1025, BobSt -    989, GregM -    988, Muham -    998 | TxCount: 930 | IddleFor: 9939382170 nano - 9939382 mili - 9.939382 sec - 0.165656 min | TotaProcessTimeInNano: 19380563
+2018-02-28T06:39:16.351392664Z INFO      DAPoS  AllWallets: Chris -   1026, BobSt -    989, GregM -    987, Muham -    998 | TxCount: 886 | IddleFor: 9939491867 nano - 9939491 mili - 9.939492 sec - 0.165658 min | TotaProcessTimeInNano: 18469803
+2018-02-28T06:39:16.351417056Z INFO      DAPoS  AllWallets: Chris -   1025, BobSt -    989, GregM -    988, Muham -    998 | TxCount: 887 | IddleFor: 9939390412 nano - 9939390 mili - 9.939390 sec - 0.165657 min | TotaProcessTimeInNano: 18367986
+2018-02-28T06:39:16.351441080Z INFO      DAPoS  AllWallets: GregM -    987, Muham -    998, Chris -   1026, BobSt -    989 | TxCount: 965 | IddleFor: 9939578725 nano - 9939578 mili - 9.939579 sec - 0.165660 min | TotaProcessTimeInNano: 20454314
+2018-02-28T06:39:16.351445925Z INFO      DAPoS  TotalTxProcessed: 3668
+
+
+500
+2018-02-28T06:40:45.329466419Z INFO      DAPoS  AllWallets: Chris -    972, BobSt -   1011, Muham -    991, GregM -   1026 | TxCount: 1177 | IddleFor: 9933883886 nano - 9933883 mili - 9.933884 sec - 0.165565 min | TotaProcessTimeInNano: 24310273
+2018-02-28T06:40:45.329497697Z INFO      DAPoS  AllWallets: Chris -    972, BobSt -   1011, Muham -    991, GregM -   1026 | TxCount: 1173 | IddleFor: 9933999690 nano - 9933999 mili - 9.934000 sec - 0.165567 min | TotaProcessTimeInNano: 26310819
+2018-02-28T06:40:45.329522285Z INFO      DAPoS  AllWallets: BobSt -   1012, Muham -    992, GregM -   1025, Chris -    971 | TxCount: 1143 | IddleFor: 9934024742 nano - 9934024 mili - 9.934025 sec - 0.165567 min | TotaProcessTimeInNano: 25777829
+2018-02-28T06:40:45.329545306Z INFO      DAPoS  AllWallets: Chris -    972, BobSt -   1011, Muham -    991, GregM -   1026 | TxCount: 1140 | IddleFor: 9934043346 nano - 9934043 mili - 9.934043 sec - 0.165567 min | TotaProcessTimeInNano: 24782439
+2018-02-28T06:40:45.329548858Z INFO      DAPoS  TotalTxProcessed: 4632
+
+
+600
+2018-02-28T06:41:31.336001980Z INFO      DAPoS  AllWallets: GregM -   1030, Muham -    995, Chris -    977, BobSt -    998 | TxCount: 1441 | IddleFor: 9932660908 nano - 9932660 mili - 9.932661 sec - 0.165544 min | TotaProcessTimeInNano: 29307753
+2018-02-28T06:41:31.336030920Z INFO      DAPoS  AllWallets: Chris -    977, BobSt -    998, Muham -    995, GregM -   1030 | TxCount: 1402 | IddleFor: 9932735136 nano - 9932735 mili - 9.932735 sec - 0.165546 min | TotaProcessTimeInNano: 28348995
+2018-02-28T06:41:31.336054351Z INFO      DAPoS  AllWallets: Chris -    977, BobSt -    998, Muham -    995, GregM -   1030 | TxCount: 1390 | IddleFor: 9932758729 nano - 9932758 mili - 9.932759 sec - 0.165546 min | TotaProcessTimeInNano: 31524091
+2018-02-28T06:41:31.336076664Z INFO      DAPoS  AllWallets: Chris -    977, BobSt -    998, Muham -    995, GregM -   1030 | TxCount: 1352 | IddleFor: 9932785845 nano - 9932785 mili - 9.932786 sec - 0.165546 min | TotaProcessTimeInNano: 30937049
+2018-02-28T06:41:31.336080107Z INFO      DAPoS  TotalTxProcessed: 5585
+
+
+700
+2018-02-28T06:42:11.078539259Z INFO      DAPoS  AllWallets: BobSt -    997, Muham -    997, Chris -   1024, GregM -    982 | TxCount: 1688 | IddleFor: 9932293632 nano - 9932293 mili - 9.932294 sec - 0.165538 min | TotaProcessTimeInNano: 30474618
+2018-02-28T06:42:11.078562846Z INFO      DAPoS  AllWallets: Muham -    997, Chris -   1024, BobSt -    997, GregM -    982 | TxCount: 1631 | IddleFor: 9932339414 nano - 9932339 mili - 9.932339 sec - 0.165539 min | TotaProcessTimeInNano: 26877010
+2018-02-28T06:42:11.078567687Z INFO      DAPoS  AllWallets: Muham -    997, GregM -    982, BobSt -    997, Chris -   1024 | TxCount: 1557 | IddleFor: 9932356661 nano - 9932356 mili - 9.932357 sec - 0.165539 min | TotaProcessTimeInNano: 29369171
+2018-02-28T06:42:11.078572382Z INFO      DAPoS  AllWallets: Muham -    997, Chris -   1024, BobSt -    997, GregM -    982 | TxCount: 1599 | IddleFor: 9932353644 nano - 9932353 mili - 9.932354 sec - 0.165539 min | TotaProcessTimeInNano: 28919194
+2018-02-28T06:42:11.078573160Z INFO      DAPoS  TotalTxProcessed: 6474
+
+
+800
+2018-02-28T06:43:59.443406964Z INFO      DAPoS  AllWallets: Chris -    990, BobSt -    982, Muham -   1009, GregM -   1019 | TxCount: 1886 | IddleFor: 9901151817 nano - 9901151 mili - 9.901152 sec - 0.165019 min | TotaProcessTimeInNano: 45168770
+2018-02-28T06:43:59.443415007Z INFO      DAPoS  AllWallets: Muham -   1009, GregM -   1019, Chris -    990, BobSt -    982 | TxCount: 1864 | IddleFor: 9901193495 nano - 9901193 mili - 9.901193 sec - 0.165020 min | TotaProcessTimeInNano: 40969100
+2018-02-28T06:43:59.443420959Z INFO      DAPoS  AllWallets: Chris -    990, GregM -   1019, BobSt -    982, Muham -   1009 | TxCount: 1833 | IddleFor: 9900771938 nano - 9900771 mili - 9.900772 sec - 0.165013 min | TotaProcessTimeInNano: 40646185
+2018-02-28T06:43:59.443426866Z INFO      DAPoS  AllWallets: Chris -    990, Muham -   1009, BobSt -    982, GregM -   1019 | TxCount: 1824 | IddleFor: 9901193051 nano - 9901193 mili - 9.901193 sec - 0.165020 min | TotaProcessTimeInNano: 43825209
+2018-02-28T06:43:59.443427867Z INFO      DAPoS  TotalTxProcessed: 7407
+
+
+900
+2018-02-28T06:45:10.111915869Z INFO      DAPoS  AllWallets: Muham -    994, Chris -   1002, GregM -   1017, BobSt -    987 | TxCount: 2072 | IddleFor: 9908717023 nano - 9908717 mili - 9.908717 sec - 0.165145 min | TotaProcessTimeInNano: 46036227
+2018-02-28T06:45:10.111946033Z INFO      DAPoS  AllWallets: Muham -    994, BobSt -    987, GregM -   1017, Chris -   1002 | TxCount: 2108 | IddleFor: 9908800572 nano - 9908800 mili - 9.908801 sec - 0.165147 min | TotaProcessTimeInNano: 45232433
+2018-02-28T06:45:10.111970620Z INFO      DAPoS  AllWallets: GregM -   1017, Muham -    994, BobSt -    987, Chris -   1002 | TxCount: 2097 | IddleFor: 9908818809 nano - 9908818 mili - 9.908819 sec - 0.165147 min | TotaProcessTimeInNano: 43123003
+2018-02-28T06:45:10.111995012Z INFO      DAPoS  AllWallets: BobSt -    987, GregM -   1017, Chris -   1002, Muham -    994 | TxCount: 2093 | IddleFor: 9908833761 nano - 9908833 mili - 9.908834 sec - 0.165147 min | TotaProcessTimeInNano: 43683098
+2018-02-28T06:45:10.111999162Z INFO      DAPoS  TotalTxProcessed: 8369
+
+
+1000
+2018-02-28T06:46:09.469193537Z INFO      DAPoS  AllWallets: GregM -   1003, Muham -   1012, Chris -    967, BobSt -   1018 | TxCount: 2398 | IddleFor: 9898772941 nano - 9898772 mili - 9.898773 sec - 0.164980 min | TotaProcessTimeInNano: 46198956
+2018-02-28T06:46:09.469223977Z INFO      DAPoS  AllWallets: Chris -    967, BobSt -   1018, GregM -   1003, Muham -   1012 | TxCount: 2311 | IddleFor: 9898862101 nano - 9898862 mili - 9.898862 sec - 0.164981 min | TotaProcessTimeInNano: 44360355
+2018-02-28T06:46:09.469247997Z INFO      DAPoS  AllWallets: Chris -    967, BobSt -   1018, GregM -   1003, Muham -   1012 | TxCount: 2278 | IddleFor: 9898890698 nano - 9898890 mili - 9.898891 sec - 0.164982 min | TotaProcessTimeInNano: 44479540
+2018-02-28T06:46:09.469271587Z INFO      DAPoS  AllWallets: GregM -   1003, Muham -   1012, Chris -    967, BobSt -   1018 | TxCount: 2207 | IddleFor: 9898915818 nano - 9898915 mili - 9.898916 sec - 0.164982 min | TotaProcessTimeInNano: 43143806
+2018-02-28T06:46:09.469275082Z INFO      DAPoS  TotalTxProcessed: 9194
+
+10,000
+2018-02-28T06:47:28.982323546Z INFO      DAPoS  AllWallets: BobSt -   1011, Chris -   1164, GregM -    967, Muham -    858 | TxCount: 24060 | IddleFor: 9197600797 nano - 9197600 mili - 9.197601 sec - 0.153293 min | TotaProcessTimeInNano: 413406903
+2018-02-28T06:47:28.982353776Z INFO      DAPoS  AllWallets: BobSt -   1011, Muham -    858, Chris -   1164, GregM -    967 | TxCount: 23432 | IddleFor: 9197683917 nano - 9197683 mili - 9.197684 sec - 0.153295 min | TotaProcessTimeInNano: 401602890
+2018-02-28T06:47:28.982377888Z INFO      DAPoS  AllWallets: BobSt -   1011, Muham -    858, GregM -    967, Chris -   1164 | TxCount: 22685 | IddleFor: 9197705618 nano - 9197705 mili - 9.197706 sec - 0.153295 min | TotaProcessTimeInNano: 374393346
+2018-02-28T06:47:28.982400936Z INFO      DAPoS  AllWallets: BobSt -   1011, Muham -    858, Chris -   1164, GregM -    967 | TxCount: 22211 | IddleFor: 9197727296 nano - 9197727 mili - 9.197727 sec - 0.153295 min | TotaProcessTimeInNano: 389461360
+2018-02-28T06:47:28.982404165Z INFO      DAPoS  TotalTxProcessed: 92375
+
+25,000
+2018-02-28T07:02:47.251409313Z INFO      DAPoS  AllWallets: Chris -   1025, BobSt -    960, Muham -    860, GregM -   1155 | TxCount: 57984 | IddleFor: 7182805481 nano - 7182805 mili - 7.182805 sec - 0.119713 min | TotaProcessTimeInNano: 2368529712
+2018-02-28T07:02:47.251415161Z INFO      DAPoS  AllWallets: BobSt -    960, Muham -    860, GregM -   1155, Chris -   1025 | TxCount: 57828 | IddleFor: 7183406867 nano - 7183406 mili - 7.183407 sec - 0.119723 min | TotaProcessTimeInNano: 2349287113
+2018-02-28T07:02:47.251420108Z INFO      DAPoS  AllWallets: Chris -   1025, BobSt -    960, Muham -    860, GregM -   1155 | TxCount: 56264 | IddleFor: 7188698501 nano - 7188698 mili - 7.188699 sec - 0.119812 min | TotaProcessTimeInNano: 2341269026
+2018-02-28T07:02:47.251424932Z INFO      DAPoS  AllWallets: Muham -    860, GregM -   1155, Chris -   1025, BobSt -    960 | TxCount: 59868 | IddleFor: 7187367893 nano - 7187367 mili - 7.187368 sec - 0.119789 min | TotaProcessTimeInNano: 2400940019
+2018-02-28T07:02:47.251425802Z INFO      DAPoS  TotalTxProcessed: 231923
+
+
+30,000
+2018-02-28T07:08:46.392464367Z INFO      DAPoS  AllWallets: BobSt -    888, Chris -   1057, GregM -   1166, Muham -    889 | TxCount: 71047 | IddleFor: 6618644753 nano - 6618644 mili - 6.618645 sec - 0.110311 min | TotaProcessTimeInNano: 2882232401
+2018-02-28T07:08:46.392472624Z INFO      DAPoS  AllWallets: Chris -   1057, BobSt -    888, GregM -   1166, Muham -    889 | TxCount: 67279 | IddleFor: 6620000249 nano - 6620000 mili - 6.620000 sec - 0.110333 min | TotaProcessTimeInNano: 2793602193
+2018-02-28T07:08:46.392479541Z INFO      DAPoS  AllWallets: BobSt -    888, Chris -   1057, Muham -    889, GregM -   1166 | TxCount: 71122 | IddleFor: 6618739426 nano - 6618739 mili - 6.618739 sec - 0.110312 min | TotaProcessTimeInNano: 2814773465
+2018-02-28T07:08:46.392486539Z INFO      DAPoS  AllWallets: Chris -   1057, Muham -    889, BobSt -    888, GregM -   1166 | TxCount: 69104 | IddleFor: 6615634893 nano - 6615634 mili - 6.615635 sec - 0.110261 min | TotaProcessTimeInNano: 2783916991
+2018-02-28T07:08:46.392487498Z INFO      DAPoS  TotalTxProcessed: 278523
+
+
+31,0000
+2018-02-28T07:17:32.390921782Z INFO      DAPoS  AllWallets: Muham -   1000, GregM -   1101, BobSt -    983, Chris -    916 | TxCount: 68527 | IddleFor: 4343656201 nano - 4343656 mili - 4.343656 sec - 0.072394 min | TotaProcessTimeInNano: 5131630593
+2018-02-28T07:17:32.390930376Z INFO      DAPoS  AllWallets: GregM -   1101, BobSt -    983, Chris -    916, Muham -   1000 | TxCount: 70686 | IddleFor: 4343684833 nano - 4343684 mili - 4.343685 sec - 0.072395 min | TotaProcessTimeInNano: 5251609233
+2018-02-28T07:17:32.390937975Z INFO      DAPoS  AllWallets: BobSt -    983, Chris -    916, Muham -   1000, GregM -   1101 | TxCount: 74809 | IddleFor: 4335899847 nano - 4335899 mili - 4.335900 sec - 0.072265 min | TotaProcessTimeInNano: 5348882286
+2018-02-28T07:17:32.390945631Z INFO      DAPoS  AllWallets: BobSt -    983, Chris -    916, Muham -   1000, GregM -   1101 | TxCount: 72968 | IddleFor: 4343973592 nano - 4343973 mili - 4.343974 sec - 0.072400 min | TotaProcessTimeInNano: 5253327607
+2018-02-28T07:17:32.390946812Z INFO      DAPoS  TotalTxProcessed: 286962
+
+2018-02-28T09:50:31.785341668Z INFO      DAPoS  AllWallets: Chris -   3263, BobSt -  -4718, GregM -   4057, Muham -   1398 | TxCount: 70484 | IddleFor: 10244655598 nano - 10244 mili - 10.244656 sec - 0.170744 min | TotaProcessTimeInNano: 20126748228
+2018-02-28T09:50:31.785348306Z INFO      DAPoS  AllWallets: Chris -     25, Muham -   1029, GregM -   1892, BobSt -   1054 | TxCount: 67864 | IddleFor: 10249193971 nano - 10249 mili - 10.249194 sec - 0.170820 min | TotaProcessTimeInNano: 21183125773
+2018-02-28T09:50:31.785352620Z INFO      DAPoS  AllWallets: GregM -      5, Chris -   1881, BobSt -   1101, Muham -   1013 | TxCount: 67656 | IddleFor: 10244102076 nano - 10244 mili - 10.244102 sec - 0.170735 min | TotaProcessTimeInNano: 21699384313
+2018-02-28T09:50:31.785356687Z INFO      DAPoS  AllWallets: Chris -    833, BobSt -   2115, GregM -   1041, Muham -     11 | TxCount: 69480 | IddleFor: 10240108647 nano - 10240 mili - 10.240109 sec - 0.170668 min | TotaProcessTimeInNano: 20848404484
+2018-02-28T09:50:31.785357445Z INFO      DAPoS  TotalTxProcessed: 275480
+
+
+
+
+
+~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~
+ Sleep 10 sec / Sleep 1 min
+~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~
+32,000
+2018-02-28T07:26:34.212056137Z INFO      DAPoS  AllWallets: Chris -    893, BobSt -      1, Muham -    656, GregM -   2450 | TxCount: 66904 | IddleFor: 45051798284 nano - 45051798 mili - 45.051798 sec - 0.750863 min | TotaProcessTimeInNano: 14786699757
+2018-02-28T07:26:34.212059516Z INFO      DAPoS  AllWallets: Chris -     17, BobSt -   2590, Muham -    534, GregM -    859 | TxCount: 71430 | IddleFor: 45024014341 nano - 45024014 mili - 45.024014 sec - 0.750400 min | TotaProcessTimeInNano: 14926805734
+2018-02-28T07:26:34.212062335Z INFO      DAPoS  AllWallets: Chris -    -29, BobSt -   3554, Muham -    473, GregM -      2 | TxCount: 72591 | IddleFor: 45051812578 nano - 45051812 mili - 45.051813 sec - 0.750864 min | TotaProcessTimeInNano: 13648695946
+2018-02-28T07:26:34.212064799Z INFO      DAPoS  AllWallets: Chris -     32, BobSt -   3168, Muham -   -330, GregM -   1130 | TxCount: 66214 | IddleFor: 44983959294 nano - 44983959 mili - 44.983959 sec - 0.749733 min | TotaProcessTimeInNano: 14961848685
+2018-02-28T07:26:34.212065442Z INFO      DAPoS  TotalTxProcessed: 277123
+
+
+2018-02-28T08:29:04.901354119Z INFO      DAPoS  AllWallets: BobSt -     96, Chris -    702, GregM -    750, Muham -   2452 | TxCount: 68320 | IddleFor: 10228311739 nano - 10228 mili - 10.228312 sec - 0.170472 min | TotaProcessTimeInNano: 13726001811
+2018-02-28T08:29:04.901359242Z INFO      DAPoS  AllWallets: Chris -     24, Muham -    307, BobSt -    276, GregM -   3393 | TxCount: 69338 | IddleFor: 10239071038 nano - 10239 mili - 10.239071 sec - 0.170651 min | TotaProcessTimeInNano: 12560661635
+2018-02-28T08:29:04.901362054Z INFO      DAPoS  AllWallets: GregM -      7, Chris -   3368, BobSt -    191, Muham -    434 | TxCount: 71425 | IddleFor: 10232190093 nano - 10232 mili - 10.232190 sec - 0.170537 min | TotaProcessTimeInNano: 13021098810
+2018-02-28T08:29:04.901364672Z INFO      DAPoS  AllWallets: Chris -  -1855, Muham -      3, GregM -   5566, BobSt -    286 | TxCount: 65343 | IddleFor: 10232190358 nano - 10232 mili - 10.232190 sec - 0.170537 min | TotaProcessTimeInNano: 13156719772
+2018-02-28T08:29:04.901365269Z INFO      DAPoS  TotalTxProcessed: 274418
+
+2018-02-28T09:27:08.480224206Z INFO      DAPoS  AllWallets: BobSt -   2138, GregM -     17, Chris -   1054, Muham -    791 | TxCount: 77010 | IddleFor: 10941010283 nano - 10941 mili - 10.941010 sec - 0.182350 min | TotaProcessTimeInNano: 15018160112
+2018-02-28T09:27:08.480230126Z INFO      DAPoS  AllWallets: GregM -   1026, BobSt -    617, Muham -     31, Chris -   2326 | TxCount: 69919 | IddleFor: 10941267654 nano - 10941 mili - 10.941268 sec - 0.182354 min | TotaProcessTimeInNano: 14263645649
+2018-02-28T09:27:08.480234587Z INFO      DAPoS  AllWallets: Chris -   1046, Muham -   1854, BobSt -     18, GregM -   1082 | TxCount: 67457 | IddleFor: 10941278146 nano - 10941 mili - 10.941278 sec - 0.182355 min | TotaProcessTimeInNano: 14137808600
+2018-02-28T09:27:08.480245399Z INFO      DAPoS  AllWallets: Chris -      6, Muham -   1995, GregM -   1038, BobSt -    961 | TxCount: 72385 | IddleFor: 10968463615 nano - 10968 mili - 10.968464 sec - 0.182808 min | TotaProcessTimeInNano: 14347897228
+2018-02-28T09:27:08.480246249Z INFO      DAPoS  TotalTxProcessed: 286762
+
+
+
+
+35,000
+
+
+50,000
+
+
+100,000
+
+
+
+NrOfDelegates * NrOfTx
+4 * 100 = 400
+4 * 200 = 800
+4 * 300 = 1200
+4 * 400 = 1600
+4 * 500 = 2000
+4 * 600 = 2400
+4 * 700 = 2800
+4 * 800 = 3200
+4 * 900 = 3600
+4 * 1000 = 4000

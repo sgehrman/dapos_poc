@@ -1,13 +1,14 @@
 package main
 
 import (
+	"sync"
 	"time"
 )
 
 type Block struct {
 	Prev        *Block
 	Next        *Block
-	Transaction *Transaction
+	Transaction Transaction
 }
 
 type Transaction struct {
@@ -22,13 +23,17 @@ type Transaction struct {
 type Node struct {
 	GenesisBlock Block
 	LastBlock    *Block
-	TxChannel    chan Transaction
 	Wallet       string
-	TxCount      int
+
+	txQueue   []Transaction
+	rwMutex   sync.RWMutex
+	TxChannel chan Transaction // *channels.InfiniteChannel //
 
 	IsDelegate      bool
-	TxFromChainById map[int]*Transaction
+	TxFromChainById map[int]Transaction
 	AllWallets      map[string]int
 
-	LogLines []string
+	TxCount               int
+	TimeForLastTx         time.Time
+	TotaProcessTimeInNano int64
 }
