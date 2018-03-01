@@ -18,7 +18,7 @@ var oneT = 1000
 var oneM = 1000 * oneT
 var oneB = 1000 * oneM
 
-var NrOfTx = oneT * 30
+var NrOfTx = oneM
 
 var TotalTxProcessed int64 = 0
 
@@ -47,6 +47,7 @@ func main() {
 	logger.Instance().LogInfo(GlobalLogTag, 0, "DAPoS Simulation!")
 	logger.Instance().LogInfo(GlobalLogTag, 0, "~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~")
 
+		//Del Node names
 	var names = []string{
 		"BobSt",
 		"Chris",
@@ -62,29 +63,16 @@ func main() {
 	// Run Transactions
 	go func() {
 
-		// Init eveyrone with some money
+		// Init everyone with some money
 		sendRandomTransaction("dl", "BobSt", 1, 1000, getNodeByAddress(names[0]))
 		sendRandomTransaction("dl", "Chris", 2, 1000, getNodeByAddress(names[1]))
 		sendRandomTransaction("dl", "GregM", 3, 1000, getNodeByAddress(names[2]))
 		sendRandomTransaction("dl", "Muham", 4, 1000, getNodeByAddress(names[3]))
 
+		//make sure everyone has money before transactions start
 		time.Sleep(time.Second * 5)
 
-		/* Used to isolate and debug buggy TX
-		var genesisWallet = "dl"
-		var chrisWallet = names[1]
-
-		var bobNode = getNodeByAddress(names[0])
-
-		var nowTime = time.Now()
-		var time1 = time.Unix(nowTime.Unix()+10, 0)
-		var time2 = time.Unix(nowTime.Unix()+5, 0)
-
-		sendRandomTransactionWithTime(genesisWallet, chrisWallet, transactionID, 1, bobNode, time1)
-		transactionID++
-		sendRandomTransactionWithTime(genesisWallet, chrisWallet, transactionID, 1, bobNode, time2)
-		*/
-
+		//start sending transactions
 		transactionID := 5
 		for ; transactionID <= NrOfTx; transactionID++ {
 			var node1 = getRandomNode(nil)
@@ -97,9 +85,7 @@ func main() {
 
 	go func() {
 		logger.Instance().LogInfo(GlobalLogTag, 0, "~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~")
-
-		// time.Sleep(time.Second * 10)
-
+		//print logs once all transactions are finished
 		for {
 			var allDone = true
 			for key := range getNodes() {
@@ -112,11 +98,10 @@ func main() {
 				break
 			}
 
-
 			time.Sleep(time.Second)
 		}
 
-
+		//get wallet and timed info after all transactions
 		var totalProcessTimeInNano int64
 		for key := range getNodes() {
 			var node = getNodes()[key]
@@ -130,7 +115,7 @@ func main() {
 			}
 
 			var delta = time.Since(node.TimeForLastTx)
-
+			//printing wallets opinions
 			logger.Instance().LogInfo(GlobalLogTag, 0,
 				fmt.Sprintf(
 					"AllWallets: %s | TxCount: %d | IddleFor: [%d nano] [%d mili] [%f sec] [%f min] | TotaProcessTimeInNano: %d",
@@ -146,8 +131,6 @@ func main() {
 
 			totalProcessTimeInNano += node.TotaProcessTimeInNano
 		}
-
-		// var totalPRocessTimeInSec = totalProcessTimeInNano / 1000000000
 
 		logger.Instance().LogInfo(GlobalLogTag, 0, fmt.Sprintf("TotalTxProcessed: %d", TotalTxProcessed))
 		logger.Instance().LogInfo(GlobalLogTag, 0, fmt.Sprintf("Performance: %d Tx in %d Nano", TotalTxProcessed, totalProcessTimeInNano))
