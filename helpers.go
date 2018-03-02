@@ -10,6 +10,7 @@ import (
 	logger "github.com/nic0lae/golog"
 )
 
+// GetRandomNumber returns an int 0 to boudary-1
 func GetRandomNumber(boundary int) int {
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
@@ -18,7 +19,7 @@ func GetRandomNumber(boundary int) int {
 
 func getDictKeysAsList() []string {
 	keys := make([]string, 0)
-	for k, _ := range getNodes() {
+	for k := range getNodes() {
 		keys = append(keys, k)
 	}
 
@@ -64,7 +65,6 @@ func sendRandomTransactionWithTime(fromWallet string, toWallet string, transacti
 		fromWallet,
 	}
 
-
 	go func() {
 		logger.Instance().LogInfo(
 			GlobalLogTag, 0,
@@ -86,8 +86,8 @@ var once sync.Once
 
 var startingBalance = 10000000
 
+// CreateNodeAndAddToList creates node and add to the list
 func CreateNodeAndAddToList(newMember string) {
-
 	GenesisBlock := Block{
 		Prev: nil,
 		Next: nil,

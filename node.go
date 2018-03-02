@@ -6,7 +6,7 @@ import (
 	logger "github.com/nic0lae/golog"
 )
 
-
+// StartListenForTx loops receiving transactions
 func (node *Node) StartListenForTx() {
 	logger.Instance().LogInfo(node.Wallet, 0, "StartListenForTx()")
 
@@ -44,6 +44,7 @@ func (node *Node) StartListenForTx() {
 	}()
 }
 
+// IsDoneProcessing returns true if node is idle
 func (node *Node) IsDoneProcessing() bool {
 	//if no transactions within 5 seconds consider done with transactions
 	var sec = time.Since(node.TimeForLastTx).Seconds()
@@ -68,9 +69,7 @@ func (node *Node) validateBlockAndTransmit(tx Transaction) {
 		node.TxFromChainById[tx.Id] = tx
 
 		// set the delegate id to current id and broadcast the valid transaction to other nodes
-		for k, _ := range getNodes() {
-
-			destinationNode := getNodes()[k]
+		for _, destinationNode := range getNodes() {
 			//don't send to self or Del that sent us the transaction
 			if destinationNode.Wallet == node.Wallet || destinationNode.Wallet == tx.DelId {
 				continue
@@ -83,13 +82,18 @@ func (node *Node) validateBlockAndTransmit(tx Transaction) {
 			//send transaction
 			go func(node *Node) {
 				tx.DelId = node.Wallet
+
+				if GlobalStressTest {
+					time.Sleep(time.Millisecond * time.Duration(GetRandomNumber(2000)))
+				}
+
 				destinationNode.TxChannel <- tx
 			}(destinationNode)
 		}
 	}
 }
 
-//validates the transaction and adds it to the end of the chain
+// validates the transaction and adds it to the end of the chain
 func (node *Node) validate(tx Transaction) bool {
 
 	//logger.Instance().LogInfo(node.Wallet, 3, "validate()")

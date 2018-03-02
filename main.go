@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -10,22 +11,28 @@ import (
 	gologC "github.com/nic0lae/golog/contracts"
 	gologM "github.com/nic0lae/golog/modifiers"
 	gologP "github.com/nic0lae/golog/persisters"
-	"strconv"
 )
 
 var oneT = 1000
 var oneM = 1000 * oneT
 var oneB = 1000 * oneM
 
+// NrOfTx number of transactions
 var NrOfTx = oneM
 
-var TotalTxProcessed int64 = 0
+// TotalTxProcessed number of transactions processed
+var TotalTxProcessed int64
 
+// GlobalLogTag Global log tag
 var GlobalLogTag = "DAPoS"
+
+// GlobalStressTest Global stress test flag
+var GlobalStressTest = false
 
 func main() {
 	nodeCount := flag.Int("nodeCount", 4, "Total nodes in the simulation")
 	txCount := flag.Int("txCount", NrOfTx, "Total transactions in the simulation")
+	flag.BoolVar(&GlobalStressTest, "stress", GlobalStressTest, "Adds random delays and random tx amounts")
 	flag.Parse()
 	finished := make(chan bool)
 	// Setup logging
@@ -51,7 +58,7 @@ func main() {
 
 	var names []string
 	for i := 0; i < *nodeCount; i++ {
-		names = append(names, "node-" + strconv.Itoa(i + 1))
+		names = append(names, "node-"+strconv.Itoa(i+1))
 	}
 
 	// Create Delegates
@@ -61,14 +68,22 @@ func main() {
 
 	// Run Transactions
 	go func() {
+		startingBalance := 1000
 
 		// Init everyone with some money
 		for i := 0; i < *nodeCount; i++ {
-			sendRandomTransaction("dl", names[i], i + 1, 1000, getNodeByAddress(names[i]))
+			// randomize the amount
+			if GlobalStressTest {
+				startingBalance = 10 + GetRandomNumber(startingBalance)
+			}
+
+			sendRandomTransaction("dl", names[i], i+1, startingBalance, getNodeByAddress(names[i]))
 		}
 
 		//make sure everyone has money before transactions start
 		time.Sleep(time.Second * 5)
+
+		amount := 1
 
 		//start sending transactions
 		transactionID := *nodeCount + 1
@@ -77,7 +92,12 @@ func main() {
 			var node2 = getRandomNode([]*Node{node1})
 			var delegateNode = getRandomNode([]*Node{node1, node2})
 
-			sendRandomTransaction(node1.Wallet, node2.Wallet, transactionID, 1, delegateNode)
+			// randomize the amount
+			if GlobalStressTest {
+				amount = 1 + GetRandomNumber(8)
+			}
+
+			sendRandomTransaction(node1.Wallet, node2.Wallet, transactionID, amount, delegateNode)
 		}
 	}()
 
@@ -86,8 +106,7 @@ func main() {
 		//print logs once all transactions are finished
 		for {
 			var allDone = true
-			for key := range getNodes() {
-				var node = getNodes()[key]
+			for _, node := range getNodes() {
 				var isDone = node.IsDoneProcessing()
 				allDone = allDone && isDone
 			}
@@ -101,11 +120,9 @@ func main() {
 
 		//get wallet and timed info after all transactions
 		var totalProcessTimeInNano int64
-		for key := range getNodes() {
-			var node = getNodes()[key]
-
+		for _, node := range getNodes() {
 			var allWaletValues = []string{}
-			for wallet, _ := range node.AllWallets {
+			for wallet := range node.AllWallets {
 				if wallet == "dl" {
 					continue
 				}
@@ -133,7 +150,7 @@ func main() {
 		logger.Instance().LogInfo(GlobalLogTag, 0, fmt.Sprintf("TotalTxProcessed: %d", TotalTxProcessed))
 		logger.Instance().LogInfo(GlobalLogTag, 0, fmt.Sprintf(
 			"Performance: %d Tx in %d Nanos [%d millis]",
-			TotalTxProcessed, totalProcessTimeInNano, totalProcessTimeInNano / 1000000))
+			TotalTxProcessed, totalProcessTimeInNano, totalProcessTimeInNano/1000000))
 		logger.Instance().LogInfo(GlobalLogTag, 0, "~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~ ~~~~")
 
 		(inmemoryLogger.(*gologM.InmemoryLogger)).Flush()
@@ -142,5 +159,5 @@ func main() {
 		finished <- true
 	}(finished)
 
-	<- finished
+	<-finished
 }

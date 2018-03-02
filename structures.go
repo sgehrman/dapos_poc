@@ -5,12 +5,14 @@ import (
 	"time"
 )
 
+// Block contains a transaction and links to prev/next blocks
 type Block struct {
 	Prev        *Block
 	Next        *Block
 	Transaction Transaction
 }
 
+// Transaction contains a transaction
 type Transaction struct {
 	Id    int
 	From  string
@@ -20,6 +22,7 @@ type Transaction struct {
 	DelId string
 }
 
+// Node contains wallets and blockchain
 type Node struct {
 	GenesisBlock Block
 	LastBlock    *Block
