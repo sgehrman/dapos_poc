@@ -74,7 +74,7 @@ func main() {
 		for i := 0; i < *nodeCount; i++ {
 			// randomize the amount
 			if GlobalStressTest {
-				startingBalance = 10 + GetRandomNumber(startingBalance)
+				startingBalance = 10 + GetRandomNumber(1000)
 			}
 
 			sendRandomTransaction("dl", names[i], i+1, startingBalance, getNodeByAddress(names[i]))

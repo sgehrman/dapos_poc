@@ -59,13 +59,13 @@ func (node *Node) checkIfValidated(txId int) bool {
 }
 
 func (node *Node) validateBlockAndTransmit(tx Transaction) {
-	//logger.Instance().LogInfo(node.Wallet, 2, "validateBlockAndTransmit()")
+	// logger.Instance().LogInfo(node.Wallet, 2, "validateBlockAndTransmit()")
 
-	//call Validate(transaction)
+	// call Validate(transaction)
 	valid := node.validate(tx)
 
 	if valid {
-		//add to seen list
+		// add to seen list
 		node.TxFromChainById[tx.Id] = tx
 
 		// set the delegate id to current id and broadcast the valid transaction to other nodes
@@ -79,7 +79,7 @@ func (node *Node) validateBlockAndTransmit(tx Transaction) {
 			//	fmt.Sprintf("sendTx() | Tx_%d(%s -> %d -> %s) | SentBy: %s | SendingTo: %s", tx.Id, tx.From, tx.Value, tx.To, tx.DelId, destinationNode.Wallet),
 			//)
 
-			//send transaction
+			// send transaction
 			go func(node *Node) {
 				tx.DelId = node.Wallet
 
@@ -87,7 +87,7 @@ func (node *Node) validateBlockAndTransmit(tx Transaction) {
 					time.Sleep(time.Millisecond * time.Duration(GetRandomNumber(2000)))
 				}
 
-				destinationNode.TxChannel <- tx
+				node.TxChannel <- tx
 			}(destinationNode)
 		}
 	}
@@ -95,7 +95,6 @@ func (node *Node) validateBlockAndTransmit(tx Transaction) {
 
 // validates the transaction and adds it to the end of the chain
 func (node *Node) validate(tx Transaction) bool {
-
 	//logger.Instance().LogInfo(node.Wallet, 3, "validate()")
 
 	var isTxValid = false
